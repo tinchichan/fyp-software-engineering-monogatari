@@ -1,0 +1,336 @@
+/**
+ * =============================================================================
+ * This is the file where all your styling should go in.
+ * Instead of modifying the styles found in the monogatari.css file or others,
+ * you should overwrite those styles in this file.
+ *
+ * The CSS selectors shown are not an extensive list but they are the most
+ * common you might want to change. To find what other elements are available,
+ * you can take a look at the monogatari.css file or use your browser's dev
+ * tools to inspect the elements.
+ * =============================================================================
+**/
+
+/**
+ * ===========================
+ * General Styling
+ * ===========================
+**/
+
+/* General Style */
+body {
+
+}
+
+/* Simple Button styles*/
+button {
+
+}
+
+/* Simple Button Style on Hover */
+button:hover {
+
+}
+
+/* General Styling for Menu Screens */
+[data-screen] {
+
+}
+
+/**
+ * ===========================
+ * Main Menu Styling
+ * ===========================
+**/
+
+/* Main Menu Styling */
+[data-screen="main"] {
+
+}
+
+/* Main Menu Buttons Styling */
+[data-screen="main"] button {
+	
+}
+
+/**
+ * ===========================
+ * Save and Load Menus Styling
+ * ===========================
+**/
+
+/* Slots Style */
+[data-component="save-slot"] figure {
+
+}
+
+/* Slot's Image Style */
+[data-component="save-slot"] img {
+
+}
+
+/* Slots Title Style */
+[data-component="save-slot"] figcaption {
+
+}
+
+/* Slots Delete Button Style */
+[data-component="save-slot"] button {
+
+}
+
+/**
+ * ===========================
+ * Game Elements Styling
+ * ===========================
+**/
+
+/* Choice Buttons style */
+[data-component="choice-container"] button {
+
+}
+
+/* Choice Button Style on Hover */
+[data-component="choice-container"] button:hover {
+
+}
+
+/* Text Box styling */
+[data-component="text-box"] {
+
+}
+
+/* Character Name Style */
+[data-ui="who"] {
+
+}
+
+/* Style for Centered Text */
+[data-component="centered-dialog"] {
+
+}
+
+/* Character Images Styles */
+[data-screen="game"] [data-character] {
+
+}
+
+/* Other Images Styles */
+[data-screen="game"] [data-image] {
+
+}
+
+/**
+ * ===========================
+ * Quick Menu Styling
+ * ===========================
+**/
+
+/* These styles are applied to the Mobile version of the Quick Menu */
+
+/* Quick Menu Style */
+[data-component="quick-menu"] {
+
+}
+
+/* Quick Menu Buttons Style */
+[data-component="quick-menu"] span {
+
+}
+
+/* Quick Menu Buttons Style on Hover */
+[data-component="quick-menu"] span:hover {
+
+}
+
+/* Quick Menu Buttons Icon Style */
+[data-component="quick-menu"] > span > .fa {
+
+}
+
+/**
+ * ===========================
+ * Range Styling
+ * ===========================
+**/
+
+/* Use the background property to set a color for these */
+input[type=range]:focus::-webkit-slider-runnable-track {
+
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+
+}
+
+input[type=range]:focus::-ms-fill-upper {
+
+}
+
+input[type=range]:focus::-ms-fill-lower {
+
+}
+
+input[type=range]::-moz-range-track {
+
+}
+
+input[type=range]::-ms-fill-lower {
+
+}
+
+input[type=range]::-ms-fill-upper {
+
+}
+
+/** Medium Screens, Phablets (601px) **/
+@media screen and (min-width: 37.56255em) {
+	/* Styles for the desktop version of the Quick Menu */
+
+	/* Quick Menu Style */
+	[data-component="quick-menu"] {
+
+	}
+
+	/* Quick Menu Buttons Style */
+	[data-component="quick-menu"] span {
+
+	}
+
+	/* Quick Menu Buttons Style on Hover */
+	[data-component="quick-menu"] span:hover {
+
+	}
+}
+
+/** Medium Devices, Tablets (992px)**/
+@media screen and (min-width: 62em) {
+
+}
+
+/** HD Screen, Large Devices, Wide Screens, Desktop (1200px) **/
+@media screen and (min-width: 75em) {
+
+}
+
+/** Full HD Screen, Large Devices, Wide Screens, Large Desktops (1920px) **/
+@media screen and (min-width: 120em) {
+
+}
+
+/** Retina Screen , Large Devices, Wide Screens(2560px) **/
+@media screen and (min-width: 160em) {
+
+}
+
+/** 4k Screens, Large Devices, Wide Screens (3840px) **/
+@media screen and (min-width: 240em) {
+
+}
+
+/** 5k Screens, Large Devices, Wide Screens (5000px) **/
+@media screen and (min-width: 312.5em) {
+
+}
+
+/** 8k Screens, Large Devices, Wide Screens (8000px) **/
+@media screen and (min-width: 500em) {
+
+}
+
+div#background[data-ui="background"].clickable {
+    background-size: contain;
+}
+
+/* Maze01 */
+choice-container.clickscreen {
+	overflow: hidden;
+	max-height:100%;
+	max-width: 100%;
+	margin:0;
+	padding:0;
+	/* Because our images are 1600x1200 in size, our ratios are 1.33 and 0.75 */
+	width: calc(100vh * 1.33); /* The viewport height multiplied by your image's width / height in decimal */
+	height: calc(100vw * 0.75); /* The viewport width multiplied by your image's height / width in decimal*/
+}
+
+choice-container.clickscreen button {
+    position: absolute;
+	border: none;
+	border-radius: 0;
+	margin:0;
+	padding:0;
+	opacity:0;
+}
+
+/* Maze01 3ways */
+choice-container.clickscreen.maze3ways button.front{
+	left: 40%;
+	top: 35%;
+	width:20%;
+	height: 20%;
+}
+
+choice-container.clickscreen.maze3ways button.left{
+	left: 10%;
+	top: 40%;
+	width:20%;
+	height: 20%;
+}
+
+choice-container.clickscreen.maze3ways button.right{
+	left: 70%;
+	top: 40%;
+	width: 20%;
+	height: 20%;
+}
+
+/* Maze01 left */
+choice-container.clickscreen.maze2left button.front{
+	left: 70%;
+	top: 35%;
+	width:20%;
+	height: 20%;
+}
+
+choice-container.clickscreen.maze2left button.left{
+	left: 40%;
+	top: 40%;
+	width:20%;
+	height: 20%;
+}
+
+/* Maze01 right */
+choice-container.clickscreen.maze2right button.front{
+	left: 10%;
+	top: 35%;
+	width:20%;
+	height: 20%;
+}
+
+choice-container.clickscreen.maze2right button.right{
+	left: 40%;
+	top: 40%;
+	width:20%;
+	height: 20%;
+}
+
+/* Maze01 deadend */
+choice-container.clickscreen.mazeDeadEnd button.front{
+	left: 40%;
+	top: 35%;
+	width:20%;
+	height: 20%;
+}
+
+/* Maze01 goal */
+choice-container.clickscreen.mazeGoal button.front{
+	left: 40%;
+	top: 35%;
+	width:20%;
+	height: 20%;
+}
+
+text-box[data-speaking="inv"] {
+	display:none!important;
+}

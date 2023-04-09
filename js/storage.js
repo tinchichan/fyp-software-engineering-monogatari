@@ -24,7 +24,6 @@ monogatari.storage({
     },
   },
 
-  
   ucddb: {
     q1: {
       q: "What is the primary purpose of a Use Case Diagram?",

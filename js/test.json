@@ -1,0 +1,157 @@
+{
+  "mxfile": {
+    "host": "embed.diagrams.net",
+    "modified": "2023-04-09T10:24:33.653Z",
+    "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+    "version": "21.1.5",
+    "etag": "K8O3nGHVR-qS1ss8BYi-",
+    "type": "embed",
+    "diagram": {
+      "id": "14058d99-db58-e9f5-3aba-399879c13e25",
+      "name": "Page-1",
+      "mxGraphModel": {
+        "dx": 1067,
+        "dy": 433,
+        "grid": 1,
+        "gridSize": 10,
+        "guides": 1,
+        "tooltips": 1,
+        "connect": 1,
+        "arrows": 1,
+        "fold": 1,
+        "page": 1,
+        "pageScale": 1,
+        "pageWidth": 826,
+        "pageHeight": 1169,
+        "background": "#ffffff",
+        "math": 0,
+        "shadow": 0,
+        "root": {
+          "mxCell": [
+            { "id": 0 },
+            { "id": 1, "parent": 0 },
+            {
+              "id": 313,
+              "style": "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;",
+              "edge": 1,
+              "parent": 1,
+              "source": 309,
+              "target": 314,
+              "mxGeometry": {
+                "relative": 1,
+                "as": "geometry",
+                "mxPoint": { "x": 310, "y": 270, "as": "targetPoint" }
+              }
+            },
+            {
+              "id": 309,
+              "value": "Classname",
+              "style": "swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 1,
+              "mxGeometry": {
+                "x": 240,
+                "y": 70,
+                "width": 140,
+                "height": 104,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 310,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 309,
+              "mxGeometry": {
+                "y": 26,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 311,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 309,
+              "mxGeometry": {
+                "y": 52,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 312,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 309,
+              "mxGeometry": {
+                "y": 78,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 314,
+              "value": "Classname",
+              "style": "swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 1,
+              "mxGeometry": {
+                "x": 240,
+                "y": 270,
+                "width": 140,
+                "height": 104,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 315,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 314,
+              "mxGeometry": {
+                "y": 26,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 316,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 314,
+              "mxGeometry": {
+                "y": 52,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            },
+            {
+              "id": 317,
+              "value": "+ field: type",
+              "style": "text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;",
+              "vertex": 1,
+              "parent": 314,
+              "mxGeometry": {
+                "y": 78,
+                "width": 140,
+                "height": 26,
+                "as": "geometry"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

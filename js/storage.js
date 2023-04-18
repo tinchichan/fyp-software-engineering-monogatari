@@ -4,7 +4,7 @@
 monogatari.storage({
   player: {
     name: "",
-    student_id: "",
+    student_id: "12345",
     hp: 100,
     usdScore: 0,
     usdfq: {
@@ -22,6 +22,14 @@ monogatari.storage({
     commufq: {
       q: "",
     },
+  },
+
+  drawCD:{
+    q1: `Design a class diagram for a simple zoo system containing three types of animals: mammals, reptiles, and birds. All animals have a name, age, and species. Each type of animal has a unique characteristic: mammals have hair type, reptiles have skin type, and birds have wing span. All animals can perform the action "make_sound()".`,
+    q2:`Design a class diagram for a basic computer system containing three components: CPU, GPU, and RAM. All components have a model and manufacturer. Each component type has a unique characteristic: CPU has clock speed, GPU has memory size, and RAM has capacity. All components have an "info()" method.`,
+    q3:`Design a class diagram for a basic library system containing two types of items: books and magazines. Both items have a title, author, and publication date. Books have a unique ISBN, and magazines have a unique issue number. Both items have a "borrow()" and "return()" method.`,
+    q4:`Design a class diagram for a basic transportation system containing three types of vehicles: cars, bicycles, and motorcycles. All vehicles have a make, model, and year. Each vehicle type has a unique characteristic: cars have number of doors, bicycles have frame material, and motorcycles have engine displacement. All vehicles have a "start()" and "stop()" method.`,
+    q5:`Design a class diagram for a basic e-commerce system containing two types of products: physical products and digital products. Both products have a name, price, and description. Physical products have weight, and digital products have file size. Both products have a "purchase()" and "refund()" method.`,
   },
 
   ucddb: {

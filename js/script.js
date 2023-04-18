@@ -1,10 +1,476 @@
+let userInput = [
+  {
+    class: "Animal",
+    attribute: ["name: String", "age: int", "species: string"],
+    method: ["make_sound()"],
+    children: ["Mammal"],
+  },
+  {
+    class: "Mammal",
+    attribute: ["hair: int"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Reptile",
+    attribute: ["skin_type: String"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Bird",
+    attribute: ["wing_span: int"],
+    method: ["make_sound()"],
+    children: [],
+  },
+];
+
+let modelInput = [
+  {
+    class: "Animal",
+    attribute: ["name: String", "age: int", "species: string"],
+    method: ["make_sound()"],
+    children: ["Mammal"],
+  },
+  {
+    class: "Mammal",
+    attribute: ["hair: string"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Reptile",
+    attribute: ["skin_type: String"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Bird",
+    attribute: ["wing_span: int"],
+    method: ["make_sound()"],
+    children: [],
+  },
+];
+
+const diff = (user, model, logs = []) => {
+  diffRoot(user, model, logs);
+  return logs;
+};
+
+const EXTRA_CLASS_MESSAGE = (cls) =>
+  `There is an extra class "${cls.class}" in the user diagram submission.`;
+const MISSING_CLASS_MESSAGE = (cls) =>
+  `There is a class "${cls.class}" missing in the user diagram submission.`;
+const INVALID_CHILDREN_MESSAGE = (child) =>
+  `The child "${child}" is not found in the user submission diagram.`;
+const EXTRA_CHILDREN_MESSAGE = (classname, childName) =>
+  `There is an extra children "${childName}" of the class "${classname}" mismatch.`;
+const MISSING_CHILDREN_MESSAGE = (classname, childName) =>
+  `There is a missing children "${childName}" of the class "${classname}" mismatch.`;
+
+const diffRoot = (user, model, logs) => {
+  // find class duplication of user submission
+  const duplications = user.filter(
+    (e, i) => user.findIndex((o) => o.class === e.class) !== i
+  );
+  console.log(model);
+  // find out all of the missing classes and the extra classes
+  const missingClasses = model.filter(
+    (i) =>
+      !user.some(
+        (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+      )
+  );
+  const extraClasses = user.filter(
+    (i) =>
+      !model.some(
+        (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+      )
+  );
+  // test whether the classes' children of the user submission is valid or not
+  const invalidChildren = user
+    .map((i) =>
+      i.children.filter(
+        (i) =>
+          !user.some(
+            (j) => i.trim().toLowerCase() === j.class.trim().toLowerCase()
+          )
+      )
+    )
+    .flat();
+  logs.push(
+    ...duplications,
+    ...missingClasses.map((e) => MISSING_CLASS_MESSAGE(e)),
+    ...extraClasses.map((e) => EXTRA_CLASS_MESSAGE(e)),
+    ...invalidChildren.map((e) => INVALID_CHILDREN_MESSAGE(e))
+  );
+
+  const subset = user.filter(
+    (e) => !duplications.includes(e) && !extraClasses.includes(e)
+  );
+
+  // apply alignment for each unique class
+  subset.forEach((i) =>
+    diffClss(
+      i,
+      model.find(
+        (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+      ),
+      logs
+    )
+  );
+};
+
+const diffClss = (user, model, logs) => {
+  // check any missing or extra attributes
+  diffAttrs(user.class, user.attribute, model.attribute, logs);
+  diffMthds(user.class, user.attribute, model.attribute, logs);
+
+  // since relationship of a diagram has to be strict, we could just simply getting the missing and the extra children
+  // * duplication is allowed
+  const missingRelationship = model.children.filter(
+    (i) =>
+      !user.children.some(
+        (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+      )
+  );
+  const extraRelationship = user.children.filter(
+    (i) =>
+      !model.children.some(
+        (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+      )
+  );
+
+  logs.push(
+    ...missingRelationship.map((e) => MISSING_CHILDREN_MESSAGE(user.class, e)),
+    ...extraRelationship.map((e) => EXTRA_CHILDREN_MESSAGE(user.class, e))
+  );
+};
+
+const toVarDeclAST = (raw) => {
+  const arr = raw.split(":");
+
+  if (arr.length !== 2) return null;
+
+  return {
+    name: arr[0].trim().toLowerCase(),
+    type: arr[1].trim().toLowerCase(),
+  };
+};
+
+const MALFORMED_VARIABLE_DECLARTION = (e) =>
+  `The string "${e}" could not be parsed into variable declartion.`;
+
+const diffAttrs = (classname, user, model, logs) => {
+  const parsedUser = user
+    .map((e) => toVarDeclAST(e) ?? logs.push())
+    .filter((e) => e);
+  const parsedModel = model
+    .map((e) => toVarDeclAST(e) ?? logs.push())
+    .filter((e) => e);
+
+  const duplications = parsedUser.filter(
+    (e, i) => parsedUser.findIndex((o) => o.name === e.name) !== i
+  );
+  const missingVarDecl = parsedModel.filter(
+    (i) => !parsedUser.some((j) => i.name === j.name)
+  );
+  const extraVarDecl = parsedUser.filter(
+    (i) => !parsedModel.some((j) => i.name === j.name)
+  );
+
+  logs.push(
+    ...duplications.map(
+      (e) =>
+        `There is a variable duplication "${e.name}" of the class "${classname}."`
+    ),
+    ...missingVarDecl.map(
+      (e) => `The variable "${e.name}" from class "${classname}" is missing.`
+    ),
+    ...extraVarDecl.map(
+      (e) => `The variable "${e.name}" of class "${classname}" is irrelevant.`
+    )
+  );
+
+  // check for the type of the field
+  const subset = parsedUser.filter(
+    (e) => !duplications.includes(e) && !extraVarDecl.includes(e)
+  );
+
+  // finding mismatch types
+  const mismatch = subset
+    .map((e) => ({
+      ...e,
+      expect: parsedModel.find((o) => e.name === o.name).type,
+    }))
+    .filter((e) => e.type !== e.expect);
+
+  logs.push(
+    ...mismatch.map(
+      (e) =>
+        `The type of variable "${e.name}" is expected to be "${e.expect}", but got "${e.type}".`
+    )
+  );
+};
+
+const diffMthds = (classname, user, model, logs) => {};
+//.gun!?
+
+/* diagram modal answer database */
+/* Class Diagrams */
+var drawAns01 = [
+  {
+    class: "Animal",
+    attribute: ["name: String", "age: int", "species: String"],
+    method: ["make_sound()"],
+    children: ["Mammal", "Reptile", "Bird"],
+  },
+  {
+    class: "Mammal",
+    attribute: ["hair_type: String"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Reptile",
+    attribute: ["skin_type: String"],
+    method: ["make_sound()"],
+    children: [],
+  },
+  {
+    class: "Bird",
+    attribute: ["wing_span: int"],
+    method: ["make_sound()"],
+    children: [],
+  },
+];
+
+var drawAns02 = [
+  {
+    class: "Component",
+    attribute: ["model: String", "manufacturer: String"],
+    method: ["info()"],
+    children: ["CPU"],
+  },
+  {
+    class: "CPU",
+    attribute: ["clock_speed: float"],
+    method: ["info()"],
+    children: [],
+  },
+  {
+    class: "GPU",
+    attribute: ["memory_size: int"],
+    method: ["info()"],
+    children: [],
+  },
+  {
+    class: "RAM",
+    attribute: ["capacity: int"],
+    method: ["info()"],
+    children: [],
+  },
+];
+
+var drawAns03 = [
+  {
+    class: "LibraryItem",
+    attribute: ["title: String", "author: String", "publication_date: String"],
+    method: ["borrow()", "return()"],
+    children: ["Book"],
+  },
+  {
+    class: "Book",
+    attribute: ["ISBN: String"],
+    method: ["borrow()", "return()"],
+    children: [],
+  },
+  {
+    class: "Magazine",
+    attribute: ["issue_number: int"],
+    method: ["borrow()", "return()"],
+    children: [],
+  },
+];
+
+var drawAns04 = [
+  {
+    class: "Vehicle",
+    attribute: ["make: String", "model: String", "year: int"],
+    method: ["start()", "stop()"],
+    children: ["Car"],
+  },
+  {
+    class: "Car",
+    attribute: ["num_doors: int"],
+    method: ["start()", "stop()"],
+    children: [],
+  },
+  {
+    class: "Bicycle",
+    attribute: ["frame_material: String"],
+    method: ["start()", "stop()"],
+    children: [],
+  },
+  {
+    class: "Motorcycle",
+    attribute: ["engine_displacement: int"],
+    method: ["start()", "stop()"],
+    children: [],
+  },
+];
+
+var drawAns05 = [
+  {
+    class: "Product",
+    attribute: ["name: String", "price: float", "description: String"],
+    method: ["purchase()", "refund()"],
+    children: ["PhysicalProduct"],
+  },
+  {
+    class: "PhysicalProduct",
+    attribute: ["weight: float"],
+    method: ["purchase()", "refund()"],
+    children: [],
+  },
+  {
+    class: "DigitalProduct",
+    attribute: ["file_size: float"],
+    method: ["purchase()", "refund()"],
+    children: [],
+  },
+];
+
+/* diagram modal answer database */
+/* Use Case Diagrams */
+
+var ucdAnswer01 = [
+  {
+    actor: "Librarian",
+    use_case: ["Add books", "Remove books", "Search books"],
+  },
+  {
+    actor: "Member",
+    use_case: ["Borrow books", "Return books", "Search books"],
+  },
+];
+
+var ucdAnswer02 = [
+  {
+    actor: "Bank Customer",
+    use_case: ["Withdraw cash", "Deposit cash", "Check balance"],
+  },
+  {
+    actor: "Bank Operator",
+    use_case: ["Load cash", "Maintain machine", "View transaction logs"],
+  },
+];
+
+var ucdAnswer03 = [
+  {
+    actor: "Shopper",
+    use_case: ["Browse products", "Add products to cart", "Place orders"],
+  },
+  {
+    actor: "Seller",
+    use_case: ["List products", "Manage inventory", "Process orders"],
+  },
+];
+
+var ucdAnswer04 = [
+  {
+    actor: "Doctor",
+    use_case: [
+      "Create prescriptions",
+      "View patient records",
+      "Schedule appointments",
+    ],
+  },
+  {
+    actor: "Patient",
+    use_case: [
+      "View prescriptions",
+      "Update personal information",
+      "Schedule appointments",
+    ],
+  },
+];
+
+var ucdAnswer05 = [
+  {
+    actor: "Project Manager",
+    use_case: ["Create tasks", "Assign tasks", "Monitor progress"],
+  },
+  {
+    actor: "Team Member",
+    use_case: [
+      "Update task status",
+      "Submit deliverables",
+      "Request assistance",
+    ],
+  },
+];
+
 /* global monogatari */
 
+//random interger generation
+var ranInt = 1;
+const randomInt = function () {
+  return (ranInt = Math.floor(Math.random() * 3) + 1);
+};
+
+//reduce hp to update score of student
 function reduce10HP() {
   monogatari.storage().player.hp = monogatari.storage().player.hp - 10;
 }
 
-function createModal() {
+//reconstruct JSON
+function reconstructJson(inputJson) {
+  const cells = inputJson.mxfile.diagram.mxGraphModel.root.mxCell;
+  const result = [];
+  let classMap = {};
+
+  cells.forEach((cell) => {
+    if (cell.style && cell.style.startsWith("swimlane")) {
+      classMap[cell.id] = cell.value;
+      result.push({
+        class: cell.value,
+        attribute: [],
+        method: [],
+        children: [], // Updated to empty array
+      });
+    }
+  });
+
+  cells.forEach((cell) => {
+    if (cell.edge) {
+      const sourceClass = classMap[cell.target]; // Reversed source and target
+      const targetClass = classMap[cell.source]; // Reversed source and target
+      const parentObj = result.find((obj) => obj.class === sourceClass);
+      if (parentObj) {
+        parentObj.children.push(targetClass);
+      }
+    } else if (cell.style && cell.style.startsWith("text")) {
+      const parentObj = result.find(
+        (obj) => obj.class === classMap[cell.parent]
+      );
+      if (parentObj) {
+        const values = cell.value.split("<br>");
+        values.forEach((value) => {
+          if (value.includes("()")) {
+            parentObj.method.push(value);
+          } else {
+            parentObj.attribute.push(value);
+          }
+        });
+      }
+    }
+  });
+  return result;
+}
+
+//create modal for drawing questions
+function createModal(question) {
   var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
     keyboard: false,
   });
@@ -113,14 +579,29 @@ function createModal() {
             }),
             "*"
           );
+
           localStorage.setItem(
             ".draft-" + name,
             JSON.stringify({ lastModified: new Date(), xml: msg.xml })
           );
-          var json = xmlToJson.parse(msg.xml);
-          console.log(JSON.stringify(json));
-          monogatari.run("jump ucdq1")
-          
+          userInput = xmlToJson.parse(msg.xml);
+          userInput = reconstructJson(userInput);
+
+          const arrTemp = [
+            drawAns01,
+            drawAns02,
+            drawAns03,
+            drawAns04,
+            drawAns05,
+          ];
+
+          console.log(arrTemp[question - 1]);
+          console.log(userInput);
+          //compare answer
+          console.log(diff(userInput, arrTemp[question - 1]));
+
+          myModal.hide();
+          monogatari.run(`jump ucdq${randomInt()}`);
         } else if (msg.event == "exit") {
           localStorage.removeItem(".draft-" + name);
           draft = null;
@@ -168,7 +649,7 @@ monogatari.action("message").messages({
     body: `
 			<p><a href='https://www.uml-diagrams.org/'>The Unified Modeling Language</a> The Unified Modeling Language</p>
 		`,
-  },   
+  },
 });
 
 // Define the notifications used in the game
@@ -312,28 +793,77 @@ monogatari.script({
     // 		'Warning': 'You must enter a name!'
     // 	}
     // },
+    // {
+    // 	'Input': {
+    // 		'Text': 'What is your student id? Very important to record your work!',
+    // 		'Validation': function (input) {
+    // 			return input.trim ().length > 0;
+    // 		},
+    // 		'Save': function (input) {
+    // 			this.storage ({
+    // 				player: {
+    // 					student_id: input
+    // 				}
+    // 			});
+    // 			return true;
+    // 		},
+    // 		'Revert': function () {
+    // 			this.storage ({
+    // 				player: {
+    // 					student_id: ''
+    // 				}
+    // 			});
+    // 		},
+    // 		'Warning': 'You must enter your student id!'
+    // 	}
+    // },
     "show scene mazeOpen with clickable",
-    // 'y Hi {{player.name}} Welcome to my maze!',
+    // 'y Hi! {{player.name}}! Welcome to my maze! You can leave after completing my challenges!',
     {
       Choice: {
         Dialog: "y Are you ready to play the game?",
-        "Yes. I'm ready!": {
+        Yes: {
           Text: `Yes. I'm ready!`,
           Do: "jump chooseEx",
         },
         No: {
           Text: "No..(I need more knowledge!)",
-          Do: "jump No",
+          Do: "jump chooseLearn",
         },
       },
     },
   ],
   //End of start
 
+  //diagram after check reaction
+  CorrectCD: [
+    "Congratulations! You are correct!",
+    {
+      Choice: {
+        "Continue!": {
+          Text: "Continue!",
+          Do: "jump UseCaseDiagramQB",
+        },
+      },
+    },
+  ],
+
+  WrongCD: [
+    "Opps! You draw it wrong!..",
+    {
+      Choice: {
+        "Continue!": {
+          Text: "Continue!",
+          Do: "jump UseCaseDiagramQB",
+        },
+      },
+    },
+  ],
+
   //Other blocks of questions
   chooseEx: [
-    "Ok. I give you a choice. You can choose which maze you are going to challenge.",
-    "You need to finish all the mazes before you can leave",
+    "y Ok. I give you a choice. You can choose which maze you are going to challenge.",
+    "y You need to finish all the mazes before you can leave",
     {
       Choice: {
         "Use Case Diagram": {
@@ -343,7 +873,7 @@ monogatari.script({
         "Class Diagram": {
           Text: "test drawInit",
           onChosen: function () {
-            createModal();
+            createModal(`${randomInt()}`);
           },
           // 'Do': 'jump ClassDiagramQB'
         },
@@ -360,30 +890,11 @@ monogatari.script({
   ],
 
   chooseLearn: [
-    "What do you want to revise before challenge?",
-    {
-      Choice: {
-        "Use Case Diagram": {
-          Text: "Use Case Diagram",
-          Do: "jump UseCaseDiagramQB",
-        },
-        "Class Diagram": {
-          Text: "Class Diagram",
-          Do: "jump ClassDiagramQB",
-        },
-        "Component Diagram": {
-          Text: "Component Diagram",
-          Do: "jump ComponentDiagramQB",
-        },
-        "Communication Diagram": {
-          Text: "Communication Diagram",
-          Do: "jump CommunicationDiagramQB",
-        },
-      },
-    },
+    "y OK! You take some time to revise before challenge!",
+    "show message Help",
+    "y Revise and come back to challenge again!",
+    "end",
   ],
-
-  //Watch Video to learn
 
   //Use Case Diagram QB
   maze0101: [
@@ -397,19 +908,19 @@ monogatari.script({
         front: {
           Text: "front",
           Class: "front",
-          Do: `jump ucdq1`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Left
         left: {
           Text: "left",
           Class: "left",
-          Do: `jump ucdq2`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Right
         right: {
-          Text: "Let's go front",
+          Text: "right",
           Class: "right",
-          Do: `jump ucdq3`,
+          Do: `jump ucdq${randomInt()}`,
         },
       },
     },
@@ -447,7 +958,7 @@ monogatari.script({
         },
       },
     },
-    "jump maze0102",
+    `jump maze010${randomInt()}`,
   ],
 
   maze0102: [
@@ -460,19 +971,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump ucdq2`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump ucdq2`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump ucdq2`,
+          Do: `jump ucdq${randomInt()}`,
         },
       },
     },
@@ -510,32 +1021,32 @@ monogatari.script({
         },
       },
     },
-    "jump maze0103",
+    `jump maze010${randomInt()}`,
   ],
 
   maze0103: [
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze01",
+        Class: "clickscreen maze3ways",
         Dialog: "Let's go!",
         //Front
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump ucdq3`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump ucdq3`,
+          Do: `jump ucdq${randomInt()}`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump ucdq3`,
+          Do: `jump ucdq${randomInt()}`,
         },
       },
     },
@@ -580,7 +1091,7 @@ monogatari.script({
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze01",
+        Class: "clickscreen maze3ways",
         Dialog: "Let's go!",
         //Front
         front: {
@@ -643,7 +1154,7 @@ monogatari.script({
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze01",
+        Class: "clickscreen maze3ways",
         Dialog: "Let's go!",
         //Front
         front: {
@@ -653,7 +1164,7 @@ monogatari.script({
         },
         //Left
         left: {
-          Text: "Let's go fron",
+          Text: "Let's go front",
           Class: "left",
           Do: `jump maze01goal`,
         },
@@ -669,8 +1180,17 @@ monogatari.script({
 
   maze01goal: [
     "show scene mazeGoal with fadeIn",
-    "y Congratulations! You passed the first test!",
-    "jump chooseEx",
+    "y Congratulations! One Last test! If you draw it successfully, you can leave~",
+    {
+      Choice: {
+        "OK! Let me draw it!": {
+          Text: `{{drawCD.q${ranInt}}}`,
+          onChosen: function () {
+            createModal(ranInt);
+          },
+        },
+      },
+    },
   ],
 
   //Class Diagrams DB

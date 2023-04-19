@@ -259,7 +259,7 @@ const diffMthds = (classname, user, model, logs) => {};
 //
 //
 //
-function diff2() {
+function diff2(a, b) {
   const diff = (user, model, logs = []) => {
     diffRoot(user, model, logs);
     return logs;
@@ -425,7 +425,7 @@ function diff2() {
 
   const diffMthds = (classname, user, model, logs) => {};
 
-  diff();
+  diff(a, b);
 }
 
 //
@@ -906,9 +906,217 @@ function reconstructJson(inputJson) {
   });
   return result;
 }
-
-//create modal for drawing questions
+//
+//
+//
+//
+//
+//
+//create modal for drawing CD questions
+//
+//
+//
 function createModal(question) {
+  var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
+    keyboard: false,
+  });
+  myModal.show();
+
+  var editor =
+    "https://embed.diagrams.net/?embed=1&lang=en&ui=min&spin=1&&proto=json&configure=1";
+  var initial = null;
+  var name = null;
+
+  function edit() {
+    var aString = `<td id="diagram" title="Double click to edit" ondblclick="edit(this);"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="203px" height="64px" version="1.1" content="&lt;mxfile userAgent=&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&quot; version=&quot;@DRAWIO-VERSION@&quot; editor=&quot;www.draw.io&quot;&gt;&lt;diagram id=&quot;14058d99-db58-e9f5-3aba-399879c13e25&quot; name=&quot;Page-1&quot;&gt;jZNNk4MgDIZ/jXeVbbe91n5d9tTDnimmwhSNg1jt/vpFCVWnszPLBfIkIfgmRiwr+5PhtfzCHHSUxnkfsX2Upkm62rhtIE9Pth8rDwqjcgqawEX9AMGYaKtyaBaBFlFbVS+hwKoCYReMG4PdMuyGelm15gW8gYvg+p1+q9xKTzfpeuJnUIUMlZP11nuuXNwLg21F9aKU3cbl3SUPd9GHNpLn2M0QO0QsM4jWn8o+Az1oG2Tzecc/vK93G6jsfxJY/OlTHly39PF7bK9OCKeuVuLudgkG6Ln2GSTqpLJwqbkY7M6NQcR20pbaWYk73rCyR14qPUzAGfQDrBKcHNTwZBNsunZIHMWDnCxuBAWvYgrOUKMZ38DicTmOhldDR3eF5k1Due9akDwPMBb6GSJtToAlWPN0IeR1JXxKmGMyu2ko0piYnA3EmhinOSxeN0+9cAdqRzCnto++2b/FDr8=&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(255, 255, 255);"><defs><linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="mx-gradient-ffcd28-1-ffa500-1-s-0"><stop offset="0%" style="stop-color:#FFCD28"/><stop offset="100%" style="stop-color:#FFA500"/></linearGradient><linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="mx-gradient-ffffff-0.9-ffffff-0.1-s-0"><stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9"/><stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1"/></linearGradient></defs><g transform="translate(0.5,0.5)"><rect x="0" y="0" width="200" height="60" rx="30" ry="30" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/><rect x="0" y="0" width="200" height="60" rx="30" ry="30" fill="url(#mx-gradient-ffcd28-1-ffa500-1-s-0)" stroke="#d79b00" pointer-events="none"/><path d="M 31.5 -1 Q -1 -1 -1 31.5 L -1 24 Q 100 42 201 24 L 201 31.5 Q 201 -1 168.5 -1 Z" fill="url(#mx-gradient-ffffff-0.9-ffffff-0.1-s-0)" stroke="none" pointer-events="none"/><g transform="translate(24.5,20.5)"><switch><foreignObject style="overflow:visible;" pointer-events="all" width="150" height="19" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; font-size: 18px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 150px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;"><div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">Double Click Here</div></div></foreignObject><text x="75" y="19" fill="#000000" text-anchor="middle" font-size="18px" font-family="Helvetica" font-weight="bold">Start</text></switch></g></g></svg></td>`;
+    var template = document.createElement("template");
+    template.innerHTML = aString.trim();
+    var elt = template.content.firstChild;
+
+    var modalBody = document.querySelector(".modal-body");
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("height", "400");
+    iframe.setAttribute("width", "100%");
+
+    var close = function () {
+      window.removeEventListener("message", receive);
+      // document.body.removeChild(iframe);
+      modalBody.removeChild(iframe);
+    };
+
+    var draft = localStorage.getItem(".draft-" + name);
+
+    if (draft != null) {
+      draft = JSON.parse(draft);
+
+      if (
+        !confirm(
+          "A version of this page from " +
+            new Date(draft.lastModified) +
+            " is available. Would you like to continue editing?"
+        )
+      ) {
+        draft = null;
+      }
+    }
+
+    var receive = function (evt) {
+      if (evt.data.length > 0) {
+        var msg = JSON.parse(evt.data);
+
+        // If configure=1 URL parameter is used the application
+        // waits for this message. For configuration options see
+        // https://desk.draw.io/support/solutions/articles/16000058316
+        if (msg.event == "configure") {
+          // Configuration example
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              action: "configure",
+              config: {
+                defaultFonts: ["Humor Sans", "Helvetica", "Times New Roman"],
+                defaultLibraries: "uml",
+                defaultColorSchemes: "gradient",
+              },
+            }),
+            "*"
+          );
+        } else if (msg.event == "init") {
+          if (draft != null) {
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "load", autosave: 1, xml: draft.xml }),
+              "*"
+            );
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "status", modified: true }),
+              "*"
+            );
+          } else {
+            // Avoids unescaped < and > from innerHTML for valid XML
+            var svg = new XMLSerializer().serializeToString(elt.firstChild);
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "load", autosave: 1, xml: svg }),
+              "*"
+            );
+          }
+        } else if (msg.event == "export") {
+          // Extracts SVG DOM from data URI to enable links
+          var svg = atob(msg.data.substring(msg.data.indexOf(",") + 1));
+          elt.innerHTML = svg;
+          localStorage.setItem(
+            name,
+            JSON.stringify({ lastModified: new Date(), data: svg })
+          );
+          localStorage.removeItem(".draft-" + name);
+          draft = null;
+          close();
+        } else if (msg.event == "autosave") {
+          localStorage.setItem(
+            ".draft-" + name,
+            JSON.stringify({ lastModified: new Date(), xml: msg.xml })
+          );
+        } else if (msg.event == "save") {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              action: "export",
+              format: "xmlsvg",
+              xml: msg.xml,
+              spin: "Updating page",
+            }),
+            "*"
+          );
+
+          localStorage.setItem(
+            ".draft-" + name,
+            JSON.stringify({ lastModified: new Date(), xml: msg.xml })
+          );
+          userInput = xmlToJson.parse(msg.xml);
+          userInput = reconstructJson(userInput);
+
+          const arrTemp = [
+            drawAns01,
+            drawAns02,
+            drawAns03,
+            drawAns04,
+            drawAns05,
+          ];
+
+          // console.log(arrTemp[question - 1]);
+          // console.log(userInput);
+
+          //compare answer
+          diffResult = diff(userInput, arrTemp[question - 1]);
+          console.log(diffResult);
+
+          if (diffResult.length === 0) {
+            monogatari.storage.player.stage += 1;
+            monogatari.run(`show message diffLogWin`);
+            monogatari.run(`jump congraz`);
+          } else {
+            var myModal2 = new bootstrap.Modal(
+              document.getElementById("exampleModal2"),
+              {
+                keyboard: false,
+              }
+            );
+            myModal2.show();
+            document.getElementById("exampleModalLabel2").textContent +=
+              JSON.stringify(diffResult);
+            myModal2.hide();
+            monogatari.run(`jump sorryLose`);
+          }
+          myModal.hide();
+        } else if (msg.event == "exit") {
+          localStorage.removeItem(".draft-" + name);
+          draft = null;
+          close();
+        }
+      }
+    };
+
+    window.addEventListener("message", receive);
+    iframe.setAttribute("src", editor);
+    // document.body.appendChild(iframe);
+    modalBody.appendChild(iframe);
+  }
+
+  function load() {
+    initial = document.getElementById("diagram").innerHTML;
+    start();
+  }
+
+  function start() {
+    name =
+      window.location.hash.length > 1
+        ? window.location.hash.substring(1)
+        : "default";
+    var current = localStorage.getItem(name);
+
+    if (current != null) {
+      var entry = JSON.parse(current);
+      document.getElementById("diagram").innerHTML = entry.data;
+    } else {
+      document.getElementById("diagram").innerHTML = initial;
+    }
+  }
+
+  window.addEventListener("hashchange", start);
+
+  edit();
+}
+
+
+//
+//
+//
+//
+//
+//
+//create modal for drawing UCD questions
+//
+//
+//
+function createModal2(question) {
   var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
     keyboard: false,
   });
@@ -1096,6 +1304,212 @@ function createModal(question) {
 
   edit();
 }
+
+//
+//
+//
+//
+//
+//
+//create modal for drawing ACD questions
+//
+//
+//
+function createModal3(question) {
+  var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
+    keyboard: false,
+  });
+  myModal.show();
+
+  var editor =
+    "https://embed.diagrams.net/?embed=1&lang=en&ui=min&spin=1&&proto=json&configure=1";
+  var initial = null;
+  var name = null;
+
+  function edit() {
+    var aString = `<td id="diagram" title="Double click to edit" ondblclick="edit(this);"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="203px" height="64px" version="1.1" content="&lt;mxfile userAgent=&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&quot; version=&quot;@DRAWIO-VERSION@&quot; editor=&quot;www.draw.io&quot;&gt;&lt;diagram id=&quot;14058d99-db58-e9f5-3aba-399879c13e25&quot; name=&quot;Page-1&quot;&gt;jZNNk4MgDIZ/jXeVbbe91n5d9tTDnimmwhSNg1jt/vpFCVWnszPLBfIkIfgmRiwr+5PhtfzCHHSUxnkfsX2Upkm62rhtIE9Pth8rDwqjcgqawEX9AMGYaKtyaBaBFlFbVS+hwKoCYReMG4PdMuyGelm15gW8gYvg+p1+q9xKTzfpeuJnUIUMlZP11nuuXNwLg21F9aKU3cbl3SUPd9GHNpLn2M0QO0QsM4jWn8o+Az1oG2Tzecc/vK93G6jsfxJY/OlTHly39PF7bK9OCKeuVuLudgkG6Ln2GSTqpLJwqbkY7M6NQcR20pbaWYk73rCyR14qPUzAGfQDrBKcHNTwZBNsunZIHMWDnCxuBAWvYgrOUKMZ38DicTmOhldDR3eF5k1Due9akDwPMBb6GSJtToAlWPN0IeR1JXxKmGMyu2ko0piYnA3EmhinOSxeN0+9cAdqRzCnto++2b/FDr8=&lt;/diagram&gt;&lt;/mxfile&gt;" style="background-color: rgb(255, 255, 255);"><defs><linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="mx-gradient-ffcd28-1-ffa500-1-s-0"><stop offset="0%" style="stop-color:#FFCD28"/><stop offset="100%" style="stop-color:#FFA500"/></linearGradient><linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="mx-gradient-ffffff-0.9-ffffff-0.1-s-0"><stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9"/><stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1"/></linearGradient></defs><g transform="translate(0.5,0.5)"><rect x="0" y="0" width="200" height="60" rx="30" ry="30" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/><rect x="0" y="0" width="200" height="60" rx="30" ry="30" fill="url(#mx-gradient-ffcd28-1-ffa500-1-s-0)" stroke="#d79b00" pointer-events="none"/><path d="M 31.5 -1 Q -1 -1 -1 31.5 L -1 24 Q 100 42 201 24 L 201 31.5 Q 201 -1 168.5 -1 Z" fill="url(#mx-gradient-ffffff-0.9-ffffff-0.1-s-0)" stroke="none" pointer-events="none"/><g transform="translate(24.5,20.5)"><switch><foreignObject style="overflow:visible;" pointer-events="all" width="150" height="19" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; font-size: 18px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 150px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;"><div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">Double Click Here</div></div></foreignObject><text x="75" y="19" fill="#000000" text-anchor="middle" font-size="18px" font-family="Helvetica" font-weight="bold">Start</text></switch></g></g></svg></td>`;
+    var template = document.createElement("template");
+    template.innerHTML = aString.trim();
+    var elt = template.content.firstChild;
+
+    var modalBody = document.querySelector(".modal-body");
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("height", "550");
+    iframe.setAttribute("width", "100%");
+
+    var close = function () {
+      window.removeEventListener("message", receive);
+      // document.body.removeChild(iframe);
+      modalBody.removeChild(iframe);
+    };
+
+    var draft = localStorage.getItem(".draft-" + name);
+
+    if (draft != null) {
+      draft = JSON.parse(draft);
+
+      if (
+        !confirm(
+          "A version of this page from " +
+            new Date(draft.lastModified) +
+            " is available. Would you like to continue editing?"
+        )
+      ) {
+        draft = null;
+      }
+    }
+
+    var receive = function (evt) {
+      if (evt.data.length > 0) {
+        var msg = JSON.parse(evt.data);
+
+        // If configure=1 URL parameter is used the application
+        // waits for this message. For configuration options see
+        // https://desk.draw.io/support/solutions/articles/16000058316
+        if (msg.event == "configure") {
+          // Configuration example
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              action: "configure",
+              config: {
+                defaultFonts: ["Humor Sans", "Helvetica", "Times New Roman"],
+                defaultLibraries: "uml",
+                defaultColorSchemes: "gradient",
+              },
+            }),
+            "*"
+          );
+        } else if (msg.event == "init") {
+          if (draft != null) {
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "load", autosave: 1, xml: draft.xml }),
+              "*"
+            );
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "status", modified: true }),
+              "*"
+            );
+          } else {
+            // Avoids unescaped < and > from innerHTML for valid XML
+            var svg = new XMLSerializer().serializeToString(elt.firstChild);
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ action: "load", autosave: 1, xml: svg }),
+              "*"
+            );
+          }
+        } else if (msg.event == "export") {
+          // Extracts SVG DOM from data URI to enable links
+          var svg = atob(msg.data.substring(msg.data.indexOf(",") + 1));
+          elt.innerHTML = svg;
+          localStorage.setItem(
+            name,
+            JSON.stringify({ lastModified: new Date(), data: svg })
+          );
+          localStorage.removeItem(".draft-" + name);
+          draft = null;
+          close();
+        } else if (msg.event == "autosave") {
+          localStorage.setItem(
+            ".draft-" + name,
+            JSON.stringify({ lastModified: new Date(), xml: msg.xml })
+          );
+        } else if (msg.event == "save") {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              action: "export",
+              format: "xmlsvg",
+              xml: msg.xml,
+              spin: "Updating page",
+            }),
+            "*"
+          );
+
+          localStorage.setItem(
+            ".draft-" + name,
+            JSON.stringify({ lastModified: new Date(), xml: msg.xml })
+          );
+          userInput = xmlToJson.parse(msg.xml);
+          userInput = reconstructJson(userInput);
+
+          const arrTemp = [
+            drawAns01,
+            drawAns02,
+            drawAns03,
+            drawAns04,
+            drawAns05,
+          ];
+
+          // console.log(arrTemp[question - 1]);
+          // console.log(userInput);
+
+          //compare answer
+          diffResult = diff(userInput, arrTemp[question - 1]);
+          console.log(diffResult);
+
+          if (diffResult.length === 0) {
+            monogatari.storage.player.stage += 1;
+            monogatari.run(`show message diffLogWin`);
+            monogatari.run(`jump congraz`);
+          } else {
+            var myModal2 = new bootstrap.Modal(
+              document.getElementById("exampleModal2"),
+              {
+                keyboard: false,
+              }
+            );
+            myModal2.show();
+            document.getElementById("exampleModalLabel2").textContent +=
+              JSON.stringify(diffResult);
+            myModal2.hide();
+            monogatari.run(`jump sorryLose`);
+          }
+          myModal.hide();
+        } else if (msg.event == "exit") {
+          localStorage.removeItem(".draft-" + name);
+          draft = null;
+          close();
+        }
+      }
+    };
+
+    window.addEventListener("message", receive);
+    iframe.setAttribute("src", editor);
+    // document.body.appendChild(iframe);
+    modalBody.appendChild(iframe);
+  }
+
+  function load() {
+    initial = document.getElementById("diagram").innerHTML;
+    start();
+  }
+
+  function start() {
+    name =
+      window.location.hash.length > 1
+        ? window.location.hash.substring(1)
+        : "default";
+    var current = localStorage.getItem(name);
+
+    if (current != null) {
+      var entry = JSON.parse(current);
+      document.getElementById("diagram").innerHTML = entry.data;
+    } else {
+      document.getElementById("diagram").innerHTML = initial;
+    }
+  }
+
+  window.addEventListener("hashchange", start);
+
+  edit();
+}
+
+
+//
+//
+//
+
+//
 
 // Define the messages used in the game.
 monogatari.action("message").messages({
@@ -1312,12 +1726,12 @@ monogatari.script({
           Do: "jump maze0101",
         },
         "Class Diagram": {
-          Text: "test drawInit",
-          Do: "jump maze0101",
+          Text: "Class Diagram",
+          Do: "jump maze0201",
         },
         "Activity Diagram": {
           Text: "Activity Diagram",
-          Do: "jump ComponentDiagramQB",
+          Do: "jump maze0301",
         },
       },
     },

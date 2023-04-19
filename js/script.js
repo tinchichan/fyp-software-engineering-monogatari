@@ -1876,6 +1876,7 @@ monogatari.assets("scenes", {
   mazeGoal: "mazegoal.jpeg",
   office: "maxresdefault.png",
   dream: "photo-1534447677768-be436bb09401.jpg",
+  dreaming: "dreaming.jpg",
   yellow3: "yellow3.jpg",
   yellowGoal: "yellowGoal.jpg"
 });
@@ -1931,73 +1932,73 @@ monogatari.component("main-screen").template(() => {
 monogatari.script({
   // The game starts here.
   Start: [
-    // "show scene dream with fadeIn",
-    // 'centered I had always been a hard worker, but ...',
-    // 'centered My boss, Karen, was particularly demanding, and she never hesitated to criticize my work.',
-    // 'show character k normal at center with rubberBand',
-    // 'k:normal This is unacceptable! I expect better from you.',
-    // 'me ... (normal I felt defeated, but I knew I had to improve.)',
+    "show scene dreaming with fadeIn",
+    'centered I had always been a hard worker, but ...',
+    'centered My boss, Karen, was particularly demanding, and she never hesitated to criticize my work.',
+    'show character k normal at center with rubberBand',
+    'k:normal This is unacceptable! I expect better from you.',
+    'me ... (normal I felt defeated, but I knew I had to improve.)',
 
-    // 'hide character k with fadeOut',
-    // 'centered ...',
-    // 'centered ...',
+    'hide character k with fadeOut',
+    'centered ...',
+    'centered ...',
 
-    // 'That night, as I was working overtime, I fell asleep at my desk.',
-    // 'centered ...',
-    // 'centered ...',
-    // 'centered In the dream ...',
+    'That night, as I was working overtime, I fell asleep at my desk.',
+    'centered ...',
+    'centered ...',
+    'centered In the dream ...',
 
-    // "play music mainTheme with loop",
+    "play music mainTheme with loop",
     "show character y normal",
     "y You cannot escape unless you solve all my UML diagram challenges in this maze!",
-    // {
-    // 	'Input': {
-    // 		'Text': 'What is your name?',
-    // 		'Validation': function (input) {
-    // 			return input.trim ().length > 0;
-    // 		},
-    // 		'Save': function (input) {
-    // 			this.storage ({
-    // 				player: {
-    // 					name: input
-    // 				}
-    // 			});
-    // 			return true;
-    // 		},
-    // 		'Revert': function () {
-    // 			this.storage ({
-    // 				player: {
-    // 					name: ''
-    // 				}
-    // 			});
-    // 		},
-    // 		'Warning': 'You must enter a name!'
-    // 	}
-    // },
-    // {
-    // 	'Input': {
-    // 		'Text': 'What is your student id? Very important to record your work!',
-    // 		'Validation': function (input) {
-    // 			return input.trim ().length > 0;
-    // 		},
-    // 		'Save': function (input) {
-    // 			this.storage ({
-    // 				player: {
-    // 					student_id: input
-    // 				}
-    // 			});
-    // 			return true;
-    // 		},
-    // 		'Revert': function () {
-    // 			this.storage ({
-    // 				player: {
-    // 					student_id: ''
-    // 				}
-    // 			});
-    // 		},
-    // 		'Warning': 'You must enter your student id!'
-    // 	}
-    // },
+    {
+    	'Input': {
+    		'Text': 'What is your name?',
+    		'Validation': function (input) {
+    			return input.trim ().length > 0;
+    		},
+    		'Save': function (input) {
+    			this.storage ({
+    				player: {
+    					name: input
+    				}
+    			});
+    			return true;
+    		},
+    		'Revert': function () {
+    			this.storage ({
+    				player: {
+    					name: ''
+    				}
+    			});
+    		},
+    		'Warning': 'You must enter a name!'
+    	}
+    },
+    {
+    	'Input': {
+    		'Text': 'What is your student id? Very important to record your work!',
+    		'Validation': function (input) {
+    			return input.trim ().length > 0;
+    		},
+    		'Save': function (input) {
+    			this.storage ({
+    				player: {
+    					student_id: input
+    				}
+    			});
+    			return true;
+    		},
+    		'Revert': function () {
+    			this.storage ({
+    				player: {
+    					student_id: ''
+    				}
+    			});
+    		},
+    		'Warning': 'You must enter your student id!'
+    	}
+    },
     "show scene mazeOpen with clickable",
     // 'y Hi! {{player.name}}! Welcome to my maze! You can leave after completing my challenges!',
     {

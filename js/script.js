@@ -854,7 +854,7 @@ var ucdAnswer05 = [
 //random interger generation
 var ranInt = 1;
 const randomInt = function () {
-  return (ranInt = Math.floor(Math.random() * 3) + 1);
+  return (ranInt = Math.floor(Math.random() * 5) + 1);
 };
 
 //reduce hp to update score of student

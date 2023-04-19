@@ -263,6 +263,26 @@ choice-container.clickscreen button {
 	opacity:0;
 }
 
+choice-container.clickscreen.yellow3 button.left{
+	left: 20%;
+	top: 20%;
+	width: 10%;
+	height: 60%;
+}
+choice-container.clickscreen.yellow3 button.front{
+	left: 45%;
+	top: 20%;
+	width: 10%;
+	height: 60%;
+}
+choice-container.clickscreen.yellow3 button.right{
+	left: 70%;
+	top: 20%;
+	width: 10%;
+	height: 60%;
+}
+
+
 /* Maze01 3ways */
 choice-container.clickscreen.maze3ways button.front{
 	left: 40%;

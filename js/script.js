@@ -1,3 +1,8 @@
+var ranInt = 1;
+const randomInt = function () {
+  return (ranInt = Math.floor(Math.random() * 4) + 1);
+};
+
 let diffResult = [];
 
 let userInput = [
@@ -58,7 +63,7 @@ let modelInput = [
 //
 //
 //
-//COMPARE ANSWERS Class Diagrams
+//COMPARE ANSWERS CD Diagrams
 //
 //
 //
@@ -266,33 +271,33 @@ function diff2(a, b) {
   };
 
   const EXTRA_CLASS_MESSAGE = (cls) =>
-    `There is an extra class "${cls.class}" in the user diagram submission.`;
+    `There is an extra actor "${cls.actor}" in the user diagram submission.`;
   const MISSING_CLASS_MESSAGE = (cls) =>
-    `There is a class "${cls.class}" missing in the user diagram submission.`;
+    `There is a actor "${cls.actor}" missing in the user diagram submission.`;
   const INVALID_CHILDREN_MESSAGE = (child) =>
     `The child "${child}" is not found in the user submission diagram.`;
   const EXTRA_CHILDREN_MESSAGE = (classname, childName) =>
-    `There is an extra children "${childName}" of the class "${classname}" mismatch.`;
+    `There is an extra children "${childName}" of the actor "${classname}" mismatch.`;
   const MISSING_CHILDREN_MESSAGE = (classname, childName) =>
-    `There is a missing children "${childName}" of the class "${classname}" mismatch.`;
+    `There is a missing children "${childName}" of the actor "${classname}" mismatch.`;
 
   const diffRoot = (user, model, logs) => {
     // find class duplication of user submission
     const duplications = user.filter(
-      (e, i) => user.findIndex((o) => o.class === e.class) !== i
+      (e, i) => user.findIndex((o) => o.actor === e.actor) !== i
     );
     console.log(model);
     // find out all of the missing classes and the extra classes
     const missingClasses = model.filter(
       (i) =>
         !user.some(
-          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+          (j) => i.actor.trim().toLowerCase() === j.actor.trim().toLowerCase()
         )
     );
     const extraClasses = user.filter(
       (i) =>
         !model.some(
-          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+          (j) => i.actor.trim().toLowerCase() === j.actor.trim().toLowerCase()
         )
     );
     // test whether the classes' children of the user submission is valid or not
@@ -301,7 +306,7 @@ function diff2(a, b) {
         i.children.filter(
           (i) =>
             !user.some(
-              (j) => i.trim().toLowerCase() === j.class.trim().toLowerCase()
+              (j) => i.trim().toLowerCase() === j.actor.trim().toLowerCase()
             )
         )
       )
@@ -322,7 +327,7 @@ function diff2(a, b) {
       diffClss(
         i,
         model.find(
-          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+          (j) => i.actor.trim().toLowerCase() === j.actor.trim().toLowerCase()
         ),
         logs
       )
@@ -331,8 +336,8 @@ function diff2(a, b) {
 
   const diffClss = (user, model, logs) => {
     // check any missing or extra attributes
-    diffAttrs(user.class, user.attribute, model.attribute, logs);
-    diffMthds(user.class, user.attribute, model.attribute, logs);
+    diffAttrs(user.actor, user.use_case, model.use_case, logs);
+    diffMthds(user.actor, user.use_case, model.use_case, logs);
 
     // since relationship of a diagram has to be strict, we could just simply getting the missing and the extra children
     // * duplication is allowed
@@ -351,9 +356,9 @@ function diff2(a, b) {
 
     logs.push(
       ...missingRelationship.map((e) =>
-        MISSING_CHILDREN_MESSAGE(user.class, e)
+        MISSING_CHILDREN_MESSAGE(user.actor, e)
       ),
-      ...extraRelationship.map((e) => EXTRA_CHILDREN_MESSAGE(user.class, e))
+      ...extraRelationship.map((e) => EXTRA_CHILDREN_MESSAGE(user.actor, e))
     );
   };
 
@@ -392,13 +397,13 @@ function diff2(a, b) {
     logs.push(
       ...duplications.map(
         (e) =>
-          `There is a variable duplication "${e.name}" of the class "${classname}."`
+          `There is a variable duplication "${e.name}" of the actor "${classname}."`
       ),
       ...missingVarDecl.map(
-        (e) => `The variable "${e.name}" from class "${classname}" is missing.`
+        (e) => `The variable "${e.name}" from actor "${classname}" is missing.`
       ),
       ...extraVarDecl.map(
-        (e) => `The variable "${e.name}" of class "${classname}" is irrelevant.`
+        (e) => `The variable "${e.name}" of actor "${classname}" is irrelevant.`
       )
     );
 
@@ -425,7 +430,9 @@ function diff2(a, b) {
 
   const diffMthds = (classname, user, model, logs) => {};
 
-  diff(a, b);
+  const logs = diff(a, b);
+
+  return logs;
 }
 
 //
@@ -616,7 +623,7 @@ function diff3() {
 
   const diffMthds = (classname, user, model, logs) => {};
 
-  diff();
+  diff(a, b);
 }
 //
 //
@@ -759,8 +766,23 @@ var drawAns05 = [
   },
 ];
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* diagram modal answer database */
-/* Use Case Diagrams */
+/* Use Case Diagrams draw answer */
+
+var drawUCDqq = [`Design a use case diagram for a basic library system with two actors: Librarian and Member. The librarian can add books, remove books, and search books. The member can borrow books, return books, and search books.`,
+  `Design a use case diagram for an ATM system with two actors: Bank Customer and Bank Operator. The bank customer can withdraw cash, deposit cash, and check balance. The bank operator can load cash, maintain the machine, and view transaction logs.`,
+  `Design a use case diagram for an online shopping platform with two actors: Shopper and Seller. The shopper can browse products, add products to cart, and place orders. The seller can list products, manage inventory, and process orders.`,
+  `Design a use case diagram for a basic hospital system with two actors: Doctor and Patient. The doctor can create prescriptions, view patient records, and schedule appointments. The patient can view prescriptions, update personal information, and schedule appointments.`,
+  `Design a use case diagram for a basic project management system with two actors: Project Manager and Team Member. The project manager can create tasks, assign tasks, and monitor progress. The team member can update task status, submit deliverables, and request assistance.`]
 
 var ucdAnswer01 = [
   {
@@ -849,21 +871,298 @@ var ucdAnswer05 = [
   },
 ];
 
-/* global monogatari */
+//
+//
+//
+//
+//Activity Diagram draw answer
+//
+//
+//
+//
 
-//random interger generation
-var ranInt = 1;
-const randomInt = function () {
-  return (ranInt = Math.floor(Math.random() * 5) + 1);
-};
+var adAnswer01 = [
+  {
+    activity: "enter user information",
+    attribute: [],
+    method: [],
+    children: ["validate user information"],
+  },
+  {
+    activity: "validate user information",
+    attribute: [],
+    method: [],
+    children: ["create user account", "send confirmation email"],
+  },
+  {
+    activity: "create user account",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+  {
+    activity: "send confirmation email",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+];
+
+var adAnswer02 = [
+  {
+    activity: "enter username and password",
+    attribute: [],
+    method: [],
+    children: ["authenticate user"],
+  },
+  {
+    activity: "authenticate user",
+    attribute: [],
+    method: [],
+    children: ["grant access", "display error message"],
+  },
+  {
+    activity: "grant access",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+  {
+    activity: "display error message",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+];
+
+var adAnswer03 = [
+  {
+    activity: "select file",
+    attribute: [],
+    method: [],
+    children: ["upload file"],
+  },
+  {
+    activity: "upload file",
+    attribute: [],
+    method: [],
+    children: ["verify file format"],
+  },
+  {
+    activity: "verify file format",
+    attribute: [],
+    method: [],
+    children: ["store file", "display error message"],
+  },
+  {
+    activity: "store file",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+  {
+    activity: "display error message",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+];
+
+var adAnswer04 = [
+  {
+    activity: "select event",
+    attribute: [],
+    method: [],
+    children: ["choose seats"],
+  },
+  {
+    activity: "choose seats",
+    attribute: [],
+    method: [],
+    children: ["make payment"],
+  },
+  {
+    activity: "make payment",
+    attribute: [],
+    method: [],
+    children: ["confirm booking", "display error message"],
+  },
+  {
+    activity: "confirm booking",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+  {
+    activity: "display error message",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+];
+
+var adAnswer05 = [
+  {
+    activity: "select pizza",
+    attribute: [],
+    method: [],
+    children: ["choose toppings"],
+  },
+  {
+    activity: "choose toppings",
+    attribute: [],
+    method: [],
+    children: ["confirm order"],
+  },
+  {
+    activity: "confirm order",
+    attribute: [],
+    method: [],
+    children: ["make payment"],
+  },
+  {
+    activity: "make payment",
+    attribute: [],
+    method: [],
+    children: ["process order", "display error message"],
+  },
+  {
+    activity: "process order",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+  {
+    activity: "display error message",
+    attribute: [],
+    method: [],
+    children: [],
+  },
+];
+
+/* global monogatari */
 
 //reduce hp to update score of student
 function reduce10HP() {
   monogatari.storage().player.hp = monogatari.storage().player.hp - 10;
 }
 
+//
+//
+//
+//
+//
+//
+//
 //reconstruct JSON
-function reconstructJson(inputJson) {
+//
+//
+//
+function reconstructJsonCD(inputJson) {
+  const cells = inputJson.mxfile.diagram.mxGraphModel.root.mxCell;
+  const result = [];
+  let classMap = {};
+
+  cells.forEach((cell) => {
+    if (cell.style && cell.style.startsWith("swimlane")) {
+      classMap[cell.id] = cell.value;
+      result.push({
+        class: cell.value,
+        attribute: [],
+        method: [],
+        children: [], // Updated to empty array
+      });
+    }
+  });
+
+  cells.forEach((cell) => {
+    if (cell.edge) {
+      const sourceClass = classMap[cell.target]; // Reversed source and target
+      const targetClass = classMap[cell.source]; // Reversed source and target
+      const parentObj = result.find((obj) => obj.class === sourceClass);
+      if (parentObj) {
+        parentObj.children.push(targetClass);
+      }
+    } else if (cell.style && cell.style.startsWith("text")) {
+      const parentObj = result.find(
+        (obj) => obj.class === classMap[cell.parent]
+      );
+      if (parentObj) {
+        const values = cell.value.split("<br>");
+        values.forEach((value) => {
+          if (value.includes("()")) {
+            parentObj.method.push(value);
+          } else {
+            parentObj.attribute.push(value);
+          }
+        });
+      }
+    }
+  });
+  console.log(result)
+  return result;
+}
+
+//
+//
+//
+//
+//
+//
+//
+//reconstruct UCD JSON
+//
+//
+//
+function reconstructJsonUCD(inputJson) {
+  const cells = inputJson.mxfile.diagram.mxGraphModel.root.mxCell;
+  const result = [];
+  const actorMap = {};
+  const useCaseMap = {};
+
+  cells.forEach(cell => {
+      if (cell.style && cell.style.startsWith("shape=umlActor")) {
+          actorMap[cell.id] = cell.value.replace('<br>', '');
+          result.push({
+              "actor": cell.value.replace('<br>', ''),
+              "use_case": [],
+              "method": [],
+              "children": [],
+          });
+      } else if (cell.style && cell.style.startsWith("ellipse")) {
+          useCaseMap[cell.id] = cell.value;
+      }
+  });
+
+  cells.forEach(cell => {
+      if (cell.edge) {
+          const sourceActor = actorMap[cell.source];
+          const targetUseCase = useCaseMap[cell.target];
+
+          if (sourceActor && targetUseCase) {
+              const actorObj = result.find(obj => obj.actor === sourceActor);
+              if (actorObj) {
+                  actorObj.use_case.push(targetUseCase);
+              }
+          }
+      }
+  });
+
+  return result;
+}
+
+//
+//
+//
+//
+//
+//
+//
+//reconstruct AD JSON
+//
+//
+//
+function reconstructJsonAD(inputJson) {
   const cells = inputJson.mxfile.diagram.mxGraphModel.root.mxCell;
   const result = [];
   let classMap = {};
@@ -916,7 +1215,7 @@ function reconstructJson(inputJson) {
 //
 //
 //
-function createModal(question) {
+function createCDModal(question) {
   var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
     keyboard: false,
   });
@@ -1031,14 +1330,15 @@ function createModal(question) {
             JSON.stringify({ lastModified: new Date(), xml: msg.xml })
           );
           userInput = xmlToJson.parse(msg.xml);
-          userInput = reconstructJson(userInput);
+          console.log(JSON.stringify(userInput))
+          userInput = reconstructJsonCD(userInput);
 
           const arrTemp = [
             drawAns01,
             drawAns02,
             drawAns03,
             drawAns04,
-            drawAns05,
+            drawAns0,
           ];
 
           // console.log(arrTemp[question - 1]);
@@ -1049,18 +1349,18 @@ function createModal(question) {
           console.log(diffResult);
 
           if (diffResult.length === 0) {
-            monogatari.storage.player.stage += 1;
+            monogatari.storage().player.stage = monogatari.storage().player.stage + 1;
             monogatari.run(`show message diffLogWin`);
             monogatari.run(`jump congraz`);
           } else {
             var myModal2 = new bootstrap.Modal(
-              document.getElementById("exampleModal2"),
+              document.getElementById("wrongModal1"),
               {
                 keyboard: false,
               }
             );
             myModal2.show();
-            document.getElementById("exampleModalLabel2").textContent +=
+            document.getElementById("wrongModalLabel1").textContent +=
               JSON.stringify(diffResult);
             myModal2.hide();
             monogatari.run(`jump sorryLose`);
@@ -1105,7 +1405,6 @@ function createModal(question) {
   edit();
 }
 
-
 //
 //
 //
@@ -1116,7 +1415,7 @@ function createModal(question) {
 //
 //
 //
-function createModal2(question) {
+function createUCDModal(question) {
   var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
     keyboard: false,
   });
@@ -1136,7 +1435,7 @@ function createModal2(question) {
     var modalBody = document.querySelector(".modal-body");
     var iframe = document.createElement("iframe");
     iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("height", "550");
+    iframe.setAttribute("height", "400");
     iframe.setAttribute("width", "100%");
 
     var close = function () {
@@ -1231,36 +1530,37 @@ function createModal2(question) {
             JSON.stringify({ lastModified: new Date(), xml: msg.xml })
           );
           userInput = xmlToJson.parse(msg.xml);
-          userInput = reconstructJson(userInput);
+          userInput = reconstructJsonUCD(userInput);
 
           const arrTemp = [
-            drawAns01,
-            drawAns02,
-            drawAns03,
-            drawAns04,
-            drawAns05,
+            ucdAnswer01,
+            ucdAnswer02,
+            ucdAnswer03,
+            ucdAnswer04,
+            ucdAnswer05,
           ];
 
-          // console.log(arrTemp[question - 1]);
-          // console.log(userInput);
+          console.log(ranInt);
+          console.log('arrTemp[question - 1]', arrTemp[question - 1]);
+          console.log('userInput',userInput);
 
           //compare answer
-          diffResult = diff(userInput, arrTemp[question - 1]);
-          console.log(diffResult);
+          diffResult = diff2(userInput, arrTemp[question-1]);
+          console.log("diff Result",diffResult);
 
           if (diffResult.length === 0) {
-            monogatari.storage.player.stage += 1;
+            monogatari.storage().player.stage = monogatari.storage().player.stage + 1;
             monogatari.run(`show message diffLogWin`);
             monogatari.run(`jump congraz`);
           } else {
             var myModal2 = new bootstrap.Modal(
-              document.getElementById("exampleModal2"),
+              document.getElementById("wrongModal2"),
               {
                 keyboard: false,
               }
             );
             myModal2.show();
-            document.getElementById("exampleModalLabel2").textContent +=
+            document.getElementById("wrongModalLabel2").textContent +=
               JSON.stringify(diffResult);
             myModal2.hide();
             monogatari.run(`jump sorryLose`);
@@ -1315,7 +1615,8 @@ function createModal2(question) {
 //
 //
 //
-function createModal3(question) {
+//
+function createADModal(question) {
   var myModal = new bootstrap.Modal(document.getElementById("exampleModal"), {
     keyboard: false,
   });
@@ -1335,7 +1636,7 @@ function createModal3(question) {
     var modalBody = document.querySelector(".modal-body");
     var iframe = document.createElement("iframe");
     iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("height", "550");
+    iframe.setAttribute("height", "400");
     iframe.setAttribute("width", "100%");
 
     var close = function () {
@@ -1430,36 +1731,36 @@ function createModal3(question) {
             JSON.stringify({ lastModified: new Date(), xml: msg.xml })
           );
           userInput = xmlToJson.parse(msg.xml);
-          userInput = reconstructJson(userInput);
+          userInput = reconstructJsonAD(userInput);
 
           const arrTemp = [
-            drawAns01,
-            drawAns02,
-            drawAns03,
-            drawAns04,
-            drawAns05,
+            adAnswer01,
+            adAnswer02,
+            adAnswer03,
+            adAnswer04,
+            adAnswer05,
           ];
 
           // console.log(arrTemp[question - 1]);
           // console.log(userInput);
 
           //compare answer
-          diffResult = diff(userInput, arrTemp[question - 1]);
+          diffResult = diff3(userInput, arrTemp[question - 1]);
           console.log(diffResult);
 
           if (diffResult.length === 0) {
-            monogatari.storage.player.stage += 1;
+            monogatari.storage().player.stage = monogatari.storage().player.stage + 1;
             monogatari.run(`show message diffLogWin`);
             monogatari.run(`jump congraz`);
           } else {
             var myModal2 = new bootstrap.Modal(
-              document.getElementById("exampleModal2"),
+              document.getElementById("wrongModal3"),
               {
                 keyboard: false,
               }
             );
             myModal2.show();
-            document.getElementById("exampleModalLabel2").textContent +=
+            document.getElementById("wrongModalLabel3").textContent +=
               JSON.stringify(diffResult);
             myModal2.hide();
             monogatari.run(`jump sorryLose`);
@@ -1503,7 +1804,6 @@ function createModal3(question) {
 
   edit();
 }
-
 
 //
 //
@@ -1575,6 +1875,9 @@ monogatari.assets("scenes", {
   mazeOpen: "maze3.jpeg",
   mazeGoal: "mazegoal.jpeg",
   office: "maxresdefault.png",
+  dream: "photo-1534447677768-be436bb09401.jpg",
+  yellow3: "yellow3.jpg",
+  yellowGoal: "yellowGoal.jpg"
 });
 
 // Define the Characters
@@ -1628,7 +1931,7 @@ monogatari.component("main-screen").template(() => {
 monogatari.script({
   // The game starts here.
   Start: [
-    "show scene office with fadeIn",
+    // "show scene dream with fadeIn",
     // 'centered I had always been a hard worker, but ...',
     // 'centered My boss, Karen, was particularly demanding, and she never hesitated to criticize my work.',
     // 'show character k normal at center with rubberBand',
@@ -1644,7 +1947,7 @@ monogatari.script({
     // 'centered ...',
     // 'centered In the dream ...',
 
-    "play music mainTheme with loop",
+    // "play music mainTheme with loop",
     "show character y normal",
     "y You cannot escape unless you solve all my UML diagram challenges in this maze!",
     // {
@@ -1756,19 +2059,19 @@ monogatari.script({
         front: {
           Text: "front",
           Class: "front",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq3`,
         },
         //Left
         left: {
           Text: "left",
           Class: "left",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq3`,
         },
         //Right
         right: {
           Text: "right",
           Class: "right",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq3`,
         },
       },
     },
@@ -1819,19 +2122,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq2}`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq3`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq4`,
         },
       },
     },
@@ -1882,19 +2185,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq4`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq4`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump ucdq${randomInt()}`,
+          Do: `jump ucdq4`,
         },
       },
     },
@@ -2029,13 +2332,13 @@ monogatari.script({
   maze01goal: [
     "show scene mazeGoal with fadeIn",
     "y Congratulations! One Last test! If you draw it successfully, you can leave~",
-    `{{drawUCD.q${ranInt}}}`,
+    `{{drawUCD.q2}}`,
     {
       Choice: {
         "OK! Let me draw it!": {
           Text: `OK! Let me draw it!`,
           onChosen: function () {
-            createModal(ranInt);
+            createUCDModal(2);
           },
         },
       },
@@ -2125,55 +2428,55 @@ monogatari.script({
       // `Let's see....I just need to click and choose my way to go...`,
       // `And remember I am always facing north`,
       Choice: {
-        Class: "clickscreen maze3ways",
+        Class: "clickscreen yellow3",
         Dialog: "Let's go!",
         //Front
-        front: {
-          Text: "front",
-          Class: "front",
-          Do: `jump cdq${randomInt()}`,
-        },
-        //Left
         left: {
           Text: "left",
           Class: "left",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq1`,
+        },
+        //Left
+        front: {
+          Text: "front",
+          Class: "front",
+          Do: `jump cdq2`,
         },
         //Right
         right: {
           Text: "right",
           Class: "right",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq3`,
         },
       },
     },
   ],
 
   cdq1: [
-    "show scene mazeOpen with clickable with fadeIn",
+    "show scene yellow3 with clickable with fadeIn",
     "y {{cddb.q1.q}}",
     {
       Choice: {
         A: {
-          Text: "a) To illustrate the dynamic behavior of a system",
+          Text: "a. United Modeling Language",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q1.q}} The correct answer should be {{cddb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) To model the static structure of a system",
+          Text: "b. Universal Markup Language",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q1.q}} The correct answer should be {{cddb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         C: {
-          Text: "c) To represent the functional requirements of a system",
+          Text: "c. Unified Modeling Language",
           Do: `y You're Correct! Keep going and find the exit!`,
         },
         D: {
-          Text: "d) To display the relationships between classes",
+          Text: "d. Unique Model Language",
           onChosen: function () {
             reduce10HP();
           },
@@ -2181,62 +2484,62 @@ monogatari.script({
         },
       },
     },
-    `jump maze020${randomInt()}`,
+    `jump maze0203`,
   ],
 
   maze0202: [
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze3ways",
+        Class: "clickscreen yellow3",
         Dialog: "Let's go!",
         //Front
-        front: {
-          Text: "Let's go front",
+        left: {
+          Text: "Let's go left",
           Class: "front",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq4`,
         },
         //Left
-        left: {
-          Text: "Let's go fron",
+        front: {
+          Text: "Let's go front",
           Class: "left",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq3`,
         },
         //Right
         right: {
-          Text: "Let's go front",
+          Text: "Let's go right",
           Class: "right",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq3`,
         },
       },
     },
   ],
 
   cdq2: [
-    "show scene mazeOpen with clickable with fadeIn",
+    "show scene yellow3 with clickable with fadeIn",
     "y {{cddb.q2.q}}",
     {
       Choice: {
         A: {
-          Text: "a) A specific function of the system",
+          Text: "a. Instances",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q2.q}} The correct answer should be {{cddb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) A physical object in the system",
+          Text: "b. Relationships",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q2.q}} The correct answer should be {{cddb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         C: {
-          Text: "c) A system or a person that interacts with the system",
+          Text: "c. Classes",
           Do: `y You're Correct! Keep going and find the exit!`,
         },
         D: {
-          Text: "d) A relationship between use cases",
+          Text: "d. Packages",
           onChosen: function () {
             reduce10HP();
           },
@@ -2251,55 +2554,55 @@ monogatari.script({
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze3ways",
+        Class: "clickscreen yellow3",
         Dialog: "Let's go!",
         //Front
+        left: {
+          Text: "Let's go left",
+          Class: "left",
+          Do: `jump cdq5`,
+        },
+        //Left
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump cdq${randomInt()}`,
-        },
-        //Left
-        left: {
-          Text: "Let's go fron",
-          Class: "left",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq5`,
         },
         //Right
         right: {
-          Text: "Let's go front",
+          Text: "Let's go right",
           Class: "right",
-          Do: `jump cdq${randomInt()}`,
+          Do: `jump cdq5`,
         },
       },
     },
   ],
 
   cdq3: [
-    "show scene mazeOpen with clickable with fadeIn",
+    "show scene yellow3 with clickable with fadeIn",
     "y {{cddb.q3.q}}",
     {
       Choice: {
         A: {
-          Text: "a) A rectangle",
+          Text: "a. Inheritance",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q3.q}} The correct answer should be {{cddb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) A circle or ellipse",
+          Text: "b. Aggregation ",
           Do: `y You're Correct!`,
         },
         C: {
-          Text: "c) A diamond",
+          Text: "c. Association",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q3.q}} The correct answer should be {{cddb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         D: {
-          Text: "d) An arrow",
+          Text: "d. Dependency",
           onChosen: function () {
             reduce10HP();
           },
@@ -2314,23 +2617,23 @@ monogatari.script({
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze3ways",
+        Class: "clickscreen yellow3",
         Dialog: "Let's go!",
         //Front
-        front: {
-          Text: "Let's go front",
+        left: {
+          Text: "Let's go left",
           Class: "front",
           Do: `jump cdq4`,
         },
         //Left
-        left: {
-          Text: "Let's go fron",
+        front: {
+          Text: "Let's go front",
           Class: "left",
           Do: `jump cdq4`,
         },
         //Right
         right: {
-          Text: "Let's go front",
+          Text: "Let's go right",
           Class: "right",
           Do: `jump cdq4`,
         },
@@ -2339,30 +2642,30 @@ monogatari.script({
   ],
 
   cdq4: [
-    "show scene mazeOpen with clickable with fadeIn",
+    "show scene yellow3 with clickable with fadeIn",
     "y {{cddb.q4.q}}",
     {
       Choice: {
         A: {
-          Text: "a) A use case that is optional or conditionally executed",
+          Text: "a. Generalization",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q4.q}} The correct answer should be {{cddb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) A use case that extends the behavior of another use case",
+          Text: "b. Dependency",
+          Do: `y You're Correct!`,
+        },
+        C: {
+          Text: "c. Aggregation",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{cddb.q4.q}} The correct answer should be {{cddb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
-        C: {
-          Text: "c) A use case that is always executed as part of another use case",
-          Do: `y You're Correct!`,
-        },
         D: {
-          Text: "d) A generalization between two actors",
+          Text: "d. Composition",
           onChosen: function () {
             reduce10HP();
           },
@@ -2377,18 +2680,18 @@ monogatari.script({
     {
       // `Let's see....I just need to click and choose my way to go...`,
       Choice: {
-        Class: "clickscreen maze3ways",
+        Class: "clickscreen yellow3",
         Dialog: "Let's go!",
         //Front
-        front: {
-          Text: "Let's go front",
-          Class: "front",
-          Do: `jump maze02goal`,
-        },
-        //Left
         left: {
           Text: "Let's go left",
           Class: "left",
+          Do: `jump maze02goal`,
+        },
+        //Left
+        front: {
+          Text: "Let's go front",
+          Class: "front",
           Do: `jump maze02goal`,
         },
         //Right
@@ -2402,15 +2705,15 @@ monogatari.script({
   ],
 
   maze02goal: [
-    "show scene mazeGoal with fadeIn",
+    "show scene yellowGoal with fadeIn",
     "y Congratulations! One Last test! If you draw it successfully, you can leave~",
-    `{{drawCD.q${ranInt}}}`,
+    `{{drawCD.q1}}`,
     {
       Choice: {
         "OK! Let me draw it!": {
           Text: `OK! Let me draw it!`,
           onChosen: function () {
-            createModal(ranInt);
+            createCDModal(1);
           },
         },
       },
@@ -2489,19 +2792,19 @@ monogatari.script({
         front: {
           Text: "front",
           Class: "front",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq1`,
         },
         //Left
         left: {
           Text: "left",
           Class: "left",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq2`,
         },
         //Right
         right: {
           Text: "right",
           Class: "right",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq3`,
         },
       },
     },
@@ -2513,25 +2816,25 @@ monogatari.script({
     {
       Choice: {
         A: {
-          Text: "a) To illustrate the dynamic behavior of a system",
-          onChosen: function () {
-            reduce10HP();
-          },
-          Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+          Text: "a. Start node",
+          Do: `y You're Correct! Keep going and find the exit!`,
         },
         B: {
-          Text: "b) To model the static structure of a system",
+          Text: "b. Decision node",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         C: {
-          Text: "c) To represent the functional requirements of a system",
-          Do: `y You're Correct! Keep going and find the exit!`,
+          Text: "c. Merge node",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP`,
         },
         D: {
-          Text: "d) To display the relationships between classes",
+          Text: "d. End node",
           onChosen: function () {
             reduce10HP();
           },
@@ -2552,19 +2855,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq3`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq5`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq4`,
         },
       },
     },
@@ -2576,25 +2879,25 @@ monogatari.script({
     {
       Choice: {
         A: {
-          Text: "a) A specific function of the system",
+          Text: "a. To model the static structure of a system",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q2.q}} The correct answer should be {{addb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) A physical object in the system",
+          Text: "b. To model the dynamic behavior of a system",
+          Do: `y You're Correct! Keep going and find the exit!'`,
+        },
+        C: {
+          Text: "c. To model the interaction between objects",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q2.q}} The correct answer should be {{addb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
-        C: {
-          Text: "c) A system or a person that interacts with the system",
-          Do: `y You're Correct! Keep going and find the exit!`,
-        },
         D: {
-          Text: "d) A relationship between use cases",
+          Text: "d. To model the deployment of components",
           onChosen: function () {
             reduce10HP();
           },
@@ -2615,19 +2918,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq3`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq3`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump adq${randomInt()}`,
+          Do: `jump adq4`,
         },
       },
     },
@@ -2639,25 +2942,25 @@ monogatari.script({
     {
       Choice: {
         A: {
-          Text: "a) A rectangle",
+          Text: "a. Filled circle",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q3.q}} The correct answer should be {{addb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         B: {
-          Text: "b) A circle or ellipse",
+          Text: "b. Diamond",
           Do: `y You're Correct!`,
         },
         C: {
-          Text: "c) A diamond",
+          Text: "c. Filled square",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q3.q}} The correct answer should be {{addb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         D: {
-          Text: "d) An arrow",
+          Text: "d. Unfilled circle",
           onChosen: function () {
             reduce10HP();
           },
@@ -2678,19 +2981,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump adq4`,
+          Do: `jump adq5`,
         },
         //Left
         left: {
           Text: "Let's go fron",
           Class: "left",
-          Do: `jump adq4`,
+          Do: `jump adq5`,
         },
         //Right
         right: {
           Text: "Let's go front",
           Class: "right",
-          Do: `jump adq4`,
+          Do: `jump adq5`,
         },
       },
     },
@@ -2702,25 +3005,25 @@ monogatari.script({
     {
       Choice: {
         A: {
-          Text: "a) A use case that is optional or conditionally executed",
-          onChosen: function () {
-            reduce10HP();
-          },
-          Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+          Text: "a. As a rectangle with rounded corners",
+          Do: `'y You're Correct!`,
         },
         B: {
-          Text: "b) A use case that extends the behavior of another use case",
+          Text: "b. As a rectangle with sharp corners",
           onChosen: function () {
             reduce10HP();
           },
           Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
         },
         C: {
-          Text: "c) A use case that is always executed as part of another use case",
-          Do: `y You're Correct!`,
+          Text: "c. As an oval",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP`,
         },
         D: {
-          Text: "d) A generalization between two actors",
+          Text: "d. As a dashed line",
           onChosen: function () {
             reduce10HP();
           },
@@ -2762,13 +3065,13 @@ monogatari.script({
   maze03goal: [
     "show scene mazeGoal with fadeIn",
     "y Congratulations! One Last test! If you draw it successfully, you can leave~",
-    `{{drawAD.q${ranInt}}}`,
+    `{{drawAD.q1}}`,
     {
       Choice: {
         "OK! Let me draw it!": {
           Text: `OK! Let me draw it!`,
           onChosen: function () {
-            createModal(ranInt);
+            createADModal(1);
           },
         },
       },

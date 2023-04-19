@@ -2561,19 +2561,19 @@ monogatari.script({
         left: {
           Text: "Let's go left",
           Class: "left",
-          Do: `jump cdq5`,
+          Do: `jump cdq4`,
         },
         //Left
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump cdq5`,
+          Do: `jump cdq4`,
         },
         //Right
         right: {
           Text: "Let's go right",
           Class: "right",
-          Do: `jump cdq5`,
+          Do: `jump cdq4`,
         },
       },
     },

@@ -1,3 +1,5 @@
+let diffResult = [];
+
 let userInput = [
   {
     class: "Animal",
@@ -52,6 +54,18 @@ let modelInput = [
   },
 ];
 
+//
+//
+//
+//
+//COMPARE ANSWERS Class Diagrams
+//
+//
+//
+//
+//
+//
+//
 const diff = (user, model, logs = []) => {
   diffRoot(user, model, logs);
   return logs;
@@ -214,8 +228,412 @@ const diffAttrs = (classname, user, model, logs) => {
 };
 
 const diffMthds = (classname, user, model, logs) => {};
-//.gun!?
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//Compare Answer UCD
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+function diff2() {
+  const diff = (user, model, logs = []) => {
+    diffRoot(user, model, logs);
+    return logs;
+  };
+
+  const EXTRA_CLASS_MESSAGE = (cls) =>
+    `There is an extra class "${cls.class}" in the user diagram submission.`;
+  const MISSING_CLASS_MESSAGE = (cls) =>
+    `There is a class "${cls.class}" missing in the user diagram submission.`;
+  const INVALID_CHILDREN_MESSAGE = (child) =>
+    `The child "${child}" is not found in the user submission diagram.`;
+  const EXTRA_CHILDREN_MESSAGE = (classname, childName) =>
+    `There is an extra children "${childName}" of the class "${classname}" mismatch.`;
+  const MISSING_CHILDREN_MESSAGE = (classname, childName) =>
+    `There is a missing children "${childName}" of the class "${classname}" mismatch.`;
+
+  const diffRoot = (user, model, logs) => {
+    // find class duplication of user submission
+    const duplications = user.filter(
+      (e, i) => user.findIndex((o) => o.class === e.class) !== i
+    );
+    console.log(model);
+    // find out all of the missing classes and the extra classes
+    const missingClasses = model.filter(
+      (i) =>
+        !user.some(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        )
+    );
+    const extraClasses = user.filter(
+      (i) =>
+        !model.some(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        )
+    );
+    // test whether the classes' children of the user submission is valid or not
+    const invalidChildren = user
+      .map((i) =>
+        i.children.filter(
+          (i) =>
+            !user.some(
+              (j) => i.trim().toLowerCase() === j.class.trim().toLowerCase()
+            )
+        )
+      )
+      .flat();
+    logs.push(
+      ...duplications,
+      ...missingClasses.map((e) => MISSING_CLASS_MESSAGE(e)),
+      ...extraClasses.map((e) => EXTRA_CLASS_MESSAGE(e)),
+      ...invalidChildren.map((e) => INVALID_CHILDREN_MESSAGE(e))
+    );
+
+    const subset = user.filter(
+      (e) => !duplications.includes(e) && !extraClasses.includes(e)
+    );
+
+    // apply alignment for each unique class
+    subset.forEach((i) =>
+      diffClss(
+        i,
+        model.find(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        ),
+        logs
+      )
+    );
+  };
+
+  const diffClss = (user, model, logs) => {
+    // check any missing or extra attributes
+    diffAttrs(user.class, user.attribute, model.attribute, logs);
+    diffMthds(user.class, user.attribute, model.attribute, logs);
+
+    // since relationship of a diagram has to be strict, we could just simply getting the missing and the extra children
+    // * duplication is allowed
+    const missingRelationship = model.children.filter(
+      (i) =>
+        !user.children.some(
+          (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+        )
+    );
+    const extraRelationship = user.children.filter(
+      (i) =>
+        !model.children.some(
+          (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+        )
+    );
+
+    logs.push(
+      ...missingRelationship.map((e) =>
+        MISSING_CHILDREN_MESSAGE(user.class, e)
+      ),
+      ...extraRelationship.map((e) => EXTRA_CHILDREN_MESSAGE(user.class, e))
+    );
+  };
+
+  const toVarDeclAST = (raw) => {
+    const arr = raw.split(":");
+
+    if (arr.length !== 2) return null;
+
+    return {
+      name: arr[0].trim().toLowerCase(),
+      type: arr[1].trim().toLowerCase(),
+    };
+  };
+
+  const MALFORMED_VARIABLE_DECLARTION = (e) =>
+    `The string "${e}" could not be parsed into variable declartion.`;
+
+  const diffAttrs = (classname, user, model, logs) => {
+    const parsedUser = user
+      .map((e) => toVarDeclAST(e) ?? logs.push())
+      .filter((e) => e);
+    const parsedModel = model
+      .map((e) => toVarDeclAST(e) ?? logs.push())
+      .filter((e) => e);
+
+    const duplications = parsedUser.filter(
+      (e, i) => parsedUser.findIndex((o) => o.name === e.name) !== i
+    );
+    const missingVarDecl = parsedModel.filter(
+      (i) => !parsedUser.some((j) => i.name === j.name)
+    );
+    const extraVarDecl = parsedUser.filter(
+      (i) => !parsedModel.some((j) => i.name === j.name)
+    );
+
+    logs.push(
+      ...duplications.map(
+        (e) =>
+          `There is a variable duplication "${e.name}" of the class "${classname}."`
+      ),
+      ...missingVarDecl.map(
+        (e) => `The variable "${e.name}" from class "${classname}" is missing.`
+      ),
+      ...extraVarDecl.map(
+        (e) => `The variable "${e.name}" of class "${classname}" is irrelevant.`
+      )
+    );
+
+    // check for the type of the field
+    const subset = parsedUser.filter(
+      (e) => !duplications.includes(e) && !extraVarDecl.includes(e)
+    );
+
+    // finding mismatch types
+    const mismatch = subset
+      .map((e) => ({
+        ...e,
+        expect: parsedModel.find((o) => e.name === o.name).type,
+      }))
+      .filter((e) => e.type !== e.expect);
+
+    logs.push(
+      ...mismatch.map(
+        (e) =>
+          `The type of variable "${e.name}" is expected to be "${e.expect}", but got "${e.type}".`
+      )
+    );
+  };
+
+  const diffMthds = (classname, user, model, logs) => {};
+
+  diff();
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//COMPARE ANSWER AD
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+function diff3() {
+  const diff = (user, model, logs = []) => {
+    diffRoot(user, model, logs);
+    return logs;
+  };
+
+  const EXTRA_CLASS_MESSAGE = (cls) =>
+    `There is an extra class "${cls.class}" in the user diagram submission.`;
+  const MISSING_CLASS_MESSAGE = (cls) =>
+    `There is a class "${cls.class}" missing in the user diagram submission.`;
+  const INVALID_CHILDREN_MESSAGE = (child) =>
+    `The child "${child}" is not found in the user submission diagram.`;
+  const EXTRA_CHILDREN_MESSAGE = (classname, childName) =>
+    `There is an extra children "${childName}" of the class "${classname}" mismatch.`;
+  const MISSING_CHILDREN_MESSAGE = (classname, childName) =>
+    `There is a missing children "${childName}" of the class "${classname}" mismatch.`;
+
+  const diffRoot = (user, model, logs) => {
+    // find class duplication of user submission
+    const duplications = user.filter(
+      (e, i) => user.findIndex((o) => o.class === e.class) !== i
+    );
+    console.log(model);
+    // find out all of the missing classes and the extra classes
+    const missingClasses = model.filter(
+      (i) =>
+        !user.some(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        )
+    );
+    const extraClasses = user.filter(
+      (i) =>
+        !model.some(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        )
+    );
+    // test whether the classes' children of the user submission is valid or not
+    const invalidChildren = user
+      .map((i) =>
+        i.children.filter(
+          (i) =>
+            !user.some(
+              (j) => i.trim().toLowerCase() === j.class.trim().toLowerCase()
+            )
+        )
+      )
+      .flat();
+    logs.push(
+      ...duplications,
+      ...missingClasses.map((e) => MISSING_CLASS_MESSAGE(e)),
+      ...extraClasses.map((e) => EXTRA_CLASS_MESSAGE(e)),
+      ...invalidChildren.map((e) => INVALID_CHILDREN_MESSAGE(e))
+    );
+
+    const subset = user.filter(
+      (e) => !duplications.includes(e) && !extraClasses.includes(e)
+    );
+
+    // apply alignment for each unique class
+    subset.forEach((i) =>
+      diffClss(
+        i,
+        model.find(
+          (j) => i.class.trim().toLowerCase() === j.class.trim().toLowerCase()
+        ),
+        logs
+      )
+    );
+  };
+
+  const diffClss = (user, model, logs) => {
+    // check any missing or extra attributes
+    diffAttrs(user.class, user.attribute, model.attribute, logs);
+    diffMthds(user.class, user.attribute, model.attribute, logs);
+
+    // since relationship of a diagram has to be strict, we could just simply getting the missing and the extra children
+    // * duplication is allowed
+    const missingRelationship = model.children.filter(
+      (i) =>
+        !user.children.some(
+          (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+        )
+    );
+    const extraRelationship = user.children.filter(
+      (i) =>
+        !model.children.some(
+          (j) => i.trim().toLowerCase() === j.trim().toLowerCase()
+        )
+    );
+
+    logs.push(
+      ...missingRelationship.map((e) =>
+        MISSING_CHILDREN_MESSAGE(user.class, e)
+      ),
+      ...extraRelationship.map((e) => EXTRA_CHILDREN_MESSAGE(user.class, e))
+    );
+  };
+
+  const toVarDeclAST = (raw) => {
+    const arr = raw.split(":");
+
+    if (arr.length !== 2) return null;
+
+    return {
+      name: arr[0].trim().toLowerCase(),
+      type: arr[1].trim().toLowerCase(),
+    };
+  };
+
+  const MALFORMED_VARIABLE_DECLARTION = (e) =>
+    `The string "${e}" could not be parsed into variable declartion.`;
+
+  const diffAttrs = (classname, user, model, logs) => {
+    const parsedUser = user
+      .map((e) => toVarDeclAST(e) ?? logs.push())
+      .filter((e) => e);
+    const parsedModel = model
+      .map((e) => toVarDeclAST(e) ?? logs.push())
+      .filter((e) => e);
+
+    const duplications = parsedUser.filter(
+      (e, i) => parsedUser.findIndex((o) => o.name === e.name) !== i
+    );
+    const missingVarDecl = parsedModel.filter(
+      (i) => !parsedUser.some((j) => i.name === j.name)
+    );
+    const extraVarDecl = parsedUser.filter(
+      (i) => !parsedModel.some((j) => i.name === j.name)
+    );
+
+    logs.push(
+      ...duplications.map(
+        (e) =>
+          `There is a variable duplication "${e.name}" of the class "${classname}."`
+      ),
+      ...missingVarDecl.map(
+        (e) => `The variable "${e.name}" from class "${classname}" is missing.`
+      ),
+      ...extraVarDecl.map(
+        (e) => `The variable "${e.name}" of class "${classname}" is irrelevant.`
+      )
+    );
+
+    // check for the type of the field
+    const subset = parsedUser.filter(
+      (e) => !duplications.includes(e) && !extraVarDecl.includes(e)
+    );
+
+    // finding mismatch types
+    const mismatch = subset
+      .map((e) => ({
+        ...e,
+        expect: parsedModel.find((o) => e.name === o.name).type,
+      }))
+      .filter((e) => e.type !== e.expect);
+
+    logs.push(
+      ...mismatch.map(
+        (e) =>
+          `The type of variable "${e.name}" is expected to be "${e.expect}", but got "${e.type}".`
+      )
+    );
+  };
+
+  const diffMthds = (classname, user, model, logs) => {};
+
+  diff();
+}
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* diagram modal answer database */
 /* Class Diagrams */
 var drawAns01 = [
@@ -348,10 +766,14 @@ var ucdAnswer01 = [
   {
     actor: "Librarian",
     use_case: ["Add books", "Remove books", "Search books"],
+    method: [],
+    children: [],
   },
   {
     actor: "Member",
     use_case: ["Borrow books", "Return books", "Search books"],
+    method: [],
+    children: [],
   },
 ];
 
@@ -359,10 +781,14 @@ var ucdAnswer02 = [
   {
     actor: "Bank Customer",
     use_case: ["Withdraw cash", "Deposit cash", "Check balance"],
+    method: [],
+    children: [],
   },
   {
     actor: "Bank Operator",
     use_case: ["Load cash", "Maintain machine", "View transaction logs"],
+    method: [],
+    children: [],
   },
 ];
 
@@ -370,10 +796,14 @@ var ucdAnswer03 = [
   {
     actor: "Shopper",
     use_case: ["Browse products", "Add products to cart", "Place orders"],
+    method: [],
+    children: [],
   },
   {
     actor: "Seller",
     use_case: ["List products", "Manage inventory", "Process orders"],
+    method: [],
+    children: [],
   },
 ];
 
@@ -385,6 +815,8 @@ var ucdAnswer04 = [
       "View patient records",
       "Schedule appointments",
     ],
+    method: [],
+    children: [],
   },
   {
     actor: "Patient",
@@ -393,6 +825,8 @@ var ucdAnswer04 = [
       "Update personal information",
       "Schedule appointments",
     ],
+    method: [],
+    children: [],
   },
 ];
 
@@ -400,6 +834,8 @@ var ucdAnswer05 = [
   {
     actor: "Project Manager",
     use_case: ["Create tasks", "Assign tasks", "Monitor progress"],
+    method: [],
+    children: [],
   },
   {
     actor: "Team Member",
@@ -408,6 +844,8 @@ var ucdAnswer05 = [
       "Submit deliverables",
       "Request assistance",
     ],
+    method: [],
+    children: [],
   },
 ];
 
@@ -595,13 +1033,31 @@ function createModal(question) {
             drawAns05,
           ];
 
-          console.log(arrTemp[question - 1]);
-          console.log(userInput);
-          //compare answer
-          console.log(diff(userInput, arrTemp[question - 1]));
+          // console.log(arrTemp[question - 1]);
+          // console.log(userInput);
 
+          //compare answer
+          diffResult = diff(userInput, arrTemp[question - 1]);
+          console.log(diffResult);
+
+          if (diffResult.length === 0) {
+            monogatari.storage.player.stage += 1;
+            monogatari.run(`show message diffLogWin`);
+            monogatari.run(`jump congraz`);
+          } else {
+            var myModal2 = new bootstrap.Modal(
+              document.getElementById("exampleModal2"),
+              {
+                keyboard: false,
+              }
+            );
+            myModal2.show();
+            document.getElementById("exampleModalLabel2").textContent +=
+              JSON.stringify(diffResult);
+            myModal2.hide();
+            monogatari.run(`jump sorryLose`);
+          }
           myModal.hide();
-          monogatari.run(`jump ucdq${randomInt()}`);
         } else if (msg.event == "exit") {
           localStorage.removeItem(".draft-" + name);
           draft = null;
@@ -648,6 +1104,13 @@ monogatari.action("message").messages({
     subtitle: "Some useful Links",
     body: `
 			<p><a href='https://www.uml-diagrams.org/'>The Unified Modeling Language</a> The Unified Modeling Language</p>
+		`,
+  },
+  diffLogWin: {
+    title: "Result",
+    subtitle: "Your diagram is...",
+    body: `
+			<p>Correct! You did a great job!</p>
 		`,
   },
 });
@@ -741,9 +1204,10 @@ monogatari.characters({
 //Home Screen
 monogatari.component("main-screen").template(() => {
   return `
-        <h1>Software Engineering Game</h1>
-
-        <main-menu></main-menu>
+        
+          <h1 style="background: linear-gradient(to bottom, #33ccff 0%, #ff99cc 100%)">Software Engineering Game</h1>
+          <img src="./assets/images/programming-code-abstract-technology-background-600w-432008905.jpg">
+          <main-menu></main-menu>
     `;
 });
 
@@ -836,29 +1300,6 @@ monogatari.script({
   //End of start
 
   //diagram after check reaction
-  CorrectCD: [
-    "Congratulations! You are correct!",
-    {
-      Choice: {
-        "Continue!": {
-          Text: "Continue!",
-          Do: "jump UseCaseDiagramQB",
-        },
-      },
-    },
-  ],
-
-  WrongCD: [
-    "Opps! You draw it wrong!..",
-    {
-      Choice: {
-        "Continue!": {
-          Text: "Continue!",
-          Do: "jump UseCaseDiagramQB",
-        },
-      },
-    },
-  ],
 
   //Other blocks of questions
   chooseEx: [
@@ -872,18 +1313,11 @@ monogatari.script({
         },
         "Class Diagram": {
           Text: "test drawInit",
-          onChosen: function () {
-            createModal(`${randomInt()}`);
-          },
-          // 'Do': 'jump ClassDiagramQB'
+          Do: "jump maze0101",
         },
-        "Component Diagram": {
-          Text: "Component Diagram",
+        "Activity Diagram": {
+          Text: "Activity Diagram",
           Do: "jump ComponentDiagramQB",
-        },
-        "Communication Diagram": {
-          Text: "Communication Diagram",
-          Do: "jump CommunicationDiagramQB",
         },
       },
     },
@@ -1160,19 +1594,19 @@ monogatari.script({
         front: {
           Text: "Let's go front",
           Class: "front",
-          Do: `jump ucdq4`,
+          Do: `jump maze01goal`,
         },
         //Left
         left: {
-          Text: "Let's go front",
+          Text: "Let's go left",
           Class: "left",
           Do: `jump maze01goal`,
         },
         //Right
         right: {
-          Text: "Let's go front",
+          Text: "Let's go right",
           Class: "right",
-          Do: `jump ucdq4`,
+          Do: `jump maze01goal`,
         },
       },
     },
@@ -1181,10 +1615,11 @@ monogatari.script({
   maze01goal: [
     "show scene mazeGoal with fadeIn",
     "y Congratulations! One Last test! If you draw it successfully, you can leave~",
+    `{{drawUCD.q${ranInt}}}`,
     {
       Choice: {
         "OK! Let me draw it!": {
-          Text: `{{drawCD.q${ranInt}}}`,
+          Text: `OK! Let me draw it!`,
           onChosen: function () {
             createModal(ranInt);
           },
@@ -1193,5 +1628,761 @@ monogatari.script({
     },
   ],
 
+  congraz: [
+    "show scene mazeGoal with fadeIn",
+    "y Congratulations! You draw it successfully, you can leave~",
+    `y Remember to save to submit your score!`,
+    {
+      Choice: {
+        "Go back main menu": {
+          Text: `Remember to save to submit your score!`,
+          Do: `jump chooseEx`,
+        },
+      },
+    },
+  ],
+
+  sorryLose: [
+    "show scene mazeGoal with fadeIn",
+    "y Opps...! You draw it wrong, you can start again and challenge again~",
+    `y Remember to save to submit your score!`,
+    {
+      Choice: {
+        "Go back main menu": {
+          Text: `Remember to save to submit your score!`,
+          Do: `jump chooseEx`,
+        },
+      },
+    },
+  ],
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   //Class Diagrams DB
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  maze0201: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      // `And remember I am always facing north`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "front",
+          Class: "front",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "left",
+          Class: "left",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "right",
+          Class: "right",
+          Do: `jump cdq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  cdq1: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{cddb.q1.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) To illustrate the dynamic behavior of a system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q1.q}} The correct answer should be {{cddb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) To model the static structure of a system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q1.q}} The correct answer should be {{cddb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) To represent the functional requirements of a system",
+          Do: `y You're Correct! Keep going and find the exit!`,
+        },
+        D: {
+          Text: "d) To display the relationships between classes",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q1.q}} The correct answer should be {{cddb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    `jump maze020${randomInt()}`,
+  ],
+
+  maze0202: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump cdq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  cdq2: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{cddb.q2.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A specific function of the system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q2.q}} The correct answer should be {{cddb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A physical object in the system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q2.q}} The correct answer should be {{cddb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) A system or a person that interacts with the system",
+          Do: `y You're Correct! Keep going and find the exit!`,
+        },
+        D: {
+          Text: "d) A relationship between use cases",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q2.q}} The correct answer should be {{cddb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    `jump maze020${randomInt()}`,
+  ],
+
+  maze0203: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump cdq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump cdq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  cdq3: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{cddb.q3.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A rectangle",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q3.q}} The correct answer should be {{cddb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A circle or ellipse",
+          Do: `y You're Correct!`,
+        },
+        C: {
+          Text: "c) A diamond",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q3.q}} The correct answer should be {{cddb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        D: {
+          Text: "d) An arrow",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q3.q}} The correct answer should be {{cddb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    "jump maze0204",
+  ],
+
+  maze0204: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump cdq4`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump cdq4`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump cdq4`,
+        },
+      },
+    },
+  ],
+
+  cdq4: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{cddb.q4.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A use case that is optional or conditionally executed",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q4.q}} The correct answer should be {{cddb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A use case that extends the behavior of another use case",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q4.q}} The correct answer should be {{cddb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) A use case that is always executed as part of another use case",
+          Do: `y You're Correct!`,
+        },
+        D: {
+          Text: "d) A generalization between two actors",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{cddb.q4.q}} The correct answer should be {{cddb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    "jump maze0205",
+  ],
+
+  maze0205: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump maze02goal`,
+        },
+        //Left
+        left: {
+          Text: "Let's go left",
+          Class: "left",
+          Do: `jump maze02goal`,
+        },
+        //Right
+        right: {
+          Text: "Let's go right",
+          Class: "right",
+          Do: `jump maze02goal`,
+        },
+      },
+    },
+  ],
+
+  maze02goal: [
+    "show scene mazeGoal with fadeIn",
+    "y Congratulations! One Last test! If you draw it successfully, you can leave~",
+    `{{drawCD.q${ranInt}}}`,
+    {
+      Choice: {
+        "OK! Let me draw it!": {
+          Text: `OK! Let me draw it!`,
+          onChosen: function () {
+            createModal(ranInt);
+          },
+        },
+      },
+    },
+  ],
+
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //Activity Diagrams DB
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  maze0301: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      // `And remember I am always facing north`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "front",
+          Class: "front",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "left",
+          Class: "left",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "right",
+          Class: "right",
+          Do: `jump adq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  adq1: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{addb.q1.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) To illustrate the dynamic behavior of a system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) To model the static structure of a system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) To represent the functional requirements of a system",
+          Do: `y You're Correct! Keep going and find the exit!`,
+        },
+        D: {
+          Text: "d) To display the relationships between classes",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q1.q}} The correct answer should be {{addb.q1.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    `jump maze030${randomInt()}`,
+  ],
+
+  maze0302: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump adq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  adq2: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{addb.q2.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A specific function of the system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q2.q}} The correct answer should be {{addb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A physical object in the system",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q2.q}} The correct answer should be {{addb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) A system or a person that interacts with the system",
+          Do: `y You're Correct! Keep going and find the exit!`,
+        },
+        D: {
+          Text: "d) A relationship between use cases",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q2.q}} The correct answer should be {{addb.q2.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    `jump maze030${randomInt()}`,
+  ],
+
+  maze0303: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump adq${randomInt()}`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump adq${randomInt()}`,
+        },
+      },
+    },
+  ],
+
+  adq3: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{addb.q3.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A rectangle",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q3.q}} The correct answer should be {{addb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A circle or ellipse",
+          Do: `y You're Correct!`,
+        },
+        C: {
+          Text: "c) A diamond",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q3.q}} The correct answer should be {{addb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        D: {
+          Text: "d) An arrow",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q3.q}} The correct answer should be {{addb.q3.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    "jump maze0404",
+  ],
+
+  maze0304: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump adq4`,
+        },
+        //Left
+        left: {
+          Text: "Let's go fron",
+          Class: "left",
+          Do: `jump adq4`,
+        },
+        //Right
+        right: {
+          Text: "Let's go front",
+          Class: "right",
+          Do: `jump adq4`,
+        },
+      },
+    },
+  ],
+
+  adq4: [
+    "show scene mazeOpen with clickable with fadeIn",
+    "y {{addb.q4.q}}",
+    {
+      Choice: {
+        A: {
+          Text: "a) A use case that is optional or conditionally executed",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        B: {
+          Text: "b) A use case that extends the behavior of another use case",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+        C: {
+          Text: "c) A use case that is always executed as part of another use case",
+          Do: `y You're Correct!`,
+        },
+        D: {
+          Text: "d) A generalization between two actors",
+          onChosen: function () {
+            reduce10HP();
+          },
+          Do: `y Opp's..You answer is incorrect... {{addb.q4.q}} The correct answer should be {{addb.q4.a}}. 10HP is deducted!! You now have {{player.hp}}/100 points of HP'`,
+        },
+      },
+    },
+    "jump maze0305",
+  ],
+
+  maze0305: [
+    {
+      // `Let's see....I just need to click and choose my way to go...`,
+      Choice: {
+        Class: "clickscreen maze3ways",
+        Dialog: "Let's go!",
+        //Front
+        front: {
+          Text: "Let's go front",
+          Class: "front",
+          Do: `jump maze03goal`,
+        },
+        //Left
+        left: {
+          Text: "Let's go left",
+          Class: "left",
+          Do: `jump maze03goal`,
+        },
+        //Right
+        right: {
+          Text: "Let's go right",
+          Class: "right",
+          Do: `jump maze03goal`,
+        },
+      },
+    },
+  ],
+
+  maze03goal: [
+    "show scene mazeGoal with fadeIn",
+    "y Congratulations! One Last test! If you draw it successfully, you can leave~",
+    `{{drawAD.q${ranInt}}}`,
+    {
+      Choice: {
+        "OK! Let me draw it!": {
+          Text: `OK! Let me draw it!`,
+          onChosen: function () {
+            createModal(ranInt);
+          },
+        },
+      },
+    },
+  ],
+
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
 });

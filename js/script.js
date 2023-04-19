@@ -1330,7 +1330,6 @@ function createCDModal(question) {
             JSON.stringify({ lastModified: new Date(), xml: msg.xml })
           );
           userInput = xmlToJson.parse(msg.xml);
-          console.log(JSON.stringify(userInput))
           userInput = reconstructJsonCD(userInput);
 
           const arrTemp = [
@@ -1338,7 +1337,7 @@ function createCDModal(question) {
             drawAns02,
             drawAns03,
             drawAns04,
-            drawAns0,
+            drawAns05,
           ];
 
           // console.log(arrTemp[question - 1]);
